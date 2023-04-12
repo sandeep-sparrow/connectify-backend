@@ -1,6 +1,5 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
-import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -24,9 +23,7 @@ public class Post {
     )
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
+    private String users;
 
     @Column(nullable = false)
     private String title;
@@ -47,8 +44,8 @@ public class Post {
     @Column(nullable = true)
     private String tag;
 
-    public Post(Users user, String title, String body, String tag) {
-        this.user = user;
+    public Post(String users, String title, String body, String tag) {
+        this.users = users;
         this.title = title;
         this.body = body;
         this.tag = tag;
@@ -66,12 +63,12 @@ public class Post {
         this.id = id;
     }
 
-    public Users getUser() {
-        return user;
+    public String getUsers() {
+        return users;
     }
 
-    public void setUser(Users user) {
-        this.user = user;
+    public void setUsers(String user) {
+        this.users = user;
     }
 
     public String getTitle() {
@@ -119,19 +116,19 @@ public class Post {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Post post = (Post) o;
-        return Objects.equals(id, post.id) && Objects.equals(user, post.user) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(tag, post.tag);
+        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(tag, post.tag);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, user, title, body, creationDate, lastModifiedDate, tag);
+        return Objects.hash(id, users, title, body, creationDate, lastModifiedDate, tag);
     }
 
     @Override
     public String toString() {
         return "Post{" +
                 "id=" + id +
-                ", user=" + user +
+                ", user=" + users +
                 ", title='" + title + '\'' +
                 ", body='" + body + '\'' +
                 ", creationDate=" + creationDate +
