@@ -16,9 +16,9 @@ The database is stored in a Docker container, which is built using the PostgreSQ
 
 ### The API also utilizes the following external APIs:
 
-AssemblyAI's API for video summarization
+<sub>AssemblyAI's API for video summarization
 
-OpenAI's API for post categorization
+OpenAI's API for post categorization</sub>
 
 
 ## Getting Started
