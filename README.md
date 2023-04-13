@@ -14,11 +14,11 @@ Docker
 
 The database is stored in a Docker container, which is built using the PostgreSQL image. This allows for easy setup and deployment of the API.
 
-### The API also utilizes the following external APIs:
+## The API also utilizes the following external APIs:
 
-<sub>AssemblyAI's API for video summarization
+AssemblyAI's API for video summarization
 
-OpenAI's API for post categorization</sub>
+OpenAI's API for post categorization
 
 
 ## Getting Started
