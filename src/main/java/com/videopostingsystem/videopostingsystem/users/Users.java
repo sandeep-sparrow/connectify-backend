@@ -14,12 +14,14 @@ public class Users implements Serializable {
     @Id
     private String username;
     private String password;
+    private String type;
 
     public Users() {
     }
-    public Users(String username, String password) {
+    public Users(String username, String password, String type) {
         this.username = username;
         this.password = password;
+        this.type = type;
     }
 
     public String getUsername() {
@@ -38,24 +40,11 @@ public class Users implements Serializable {
         this.password = password;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Users users = (Users) o;
-        return Objects.equals(username, users.username) && Objects.equals(password, users.password);
+    public String getType() {
+        return type;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(username, password);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -1,5 +1,6 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
+import com.videopostingsystem.videopostingsystem.OpenAPI;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.servlet.http.HttpSession;
@@ -25,16 +26,41 @@ public class PostRequest {
     public ResponseEntity<?> createPost(@RequestBody PostModel post, HttpSession session){
         String loggedInUser = (String) session.getAttribute("loggedInUser");
             if (loggedInUser != null){
-                if (post.title().length() < 5){
-                    return ResponseEntity.badRequest().body("Title must be longer than 5 characters");
+                if (post.title().length() < 5 || post.title().length() > 50){
+                    return ResponseEntity.badRequest().body("Title must be longer than 5 characters and less than 50 characters");
                 }
-                if (post.body().length() < 200 && post.body().length() > 10){
+                if (post.body().length() < 255 && post.body().length() > 10){
                     Users user = userRepository.getReferenceById(loggedInUser);
-                    Post newPost = new Post(user.getUsername(), post.title(), post.body(), post.tag());
+                    Post newPost = new Post(user.getUsername(), post.title(), post.body());
+                    String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the word of the category:" +
+                            "Technology\n" +
+                            "Travel\n" +
+                            "Food\n" +
+                            "Fashion\n" +
+                            "Sports\n" +
+                            "Health\n" +
+                            "Beauty\n" +
+                            "Music\n" +
+                            "Gaming\n" +
+                            "Finance\n" +
+                            "Education\n" +
+                            "Art\n" +
+                            "Politics\n" +
+                            "Science\n" +
+                            "Environment\n" +
+                            "Literature\n" +
+                            "Business\n" +
+                            "Entertainment\n" +
+                            "Social issues\n" +
+                            "History" +
+                            "Miscellaneous" +
+                            "Here is the content:" +
+                            post.title() + post.body());
+                    newPost.setCategory(category);
                     postRepository.save(newPost);
                     return ResponseEntity.ok(newPost);
                 }
-                else return ResponseEntity.badRequest().body("Body must be 10-200 characters long");
+                else return ResponseEntity.badRequest().body("Body must be 10-255 characters long");
 
             }
             else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
@@ -83,12 +109,6 @@ public class PostRequest {
                             postObj.setTitle(postModel.title());
                         }
                         else return ResponseEntity.badRequest().body("Title must be between 5-100 characters");
-                    }
-                    if (postModel.tag()!= null){
-                        if (postModel.tag().length() < 20){
-                            postObj.setTag(postModel.tag());
-                        }
-                        else return ResponseEntity.badRequest().body("tag cannot be longer than 20 characters");
                     }
                     postObj.setLastModifiedDate(new Date());
 

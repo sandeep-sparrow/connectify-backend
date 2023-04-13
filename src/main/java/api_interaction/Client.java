@@ -14,16 +14,18 @@ public class Client {
     private final String url = "http://localhost:8080/";
     private String username;
     private String password;
+    private String type;
 
-    public Client(String username, String password){
+    public Client(String username, String password, String type){
         this.username = username;
         this.password = password;
+        this.type = type;
     }
 
     public String signUp() {
         try {
             Gson gson = new Gson();
-            AuthenticateModel model = new AuthenticateModel(username, password);
+            AuthenticateModel model = new AuthenticateModel(username, password, type);
             String json = gson.toJson(model);
             HttpRequest signUpRequest = HttpRequest.newBuilder()
                     .uri(new URI(url + "sign-up"))
@@ -60,7 +62,7 @@ public class Client {
     public String login() {
         try {
             Gson gson = new Gson();
-            AuthenticateModel model = new AuthenticateModel(username, password);
+            AuthenticateModel model = new AuthenticateModel(username, password, type);
             String json = gson.toJson(model);
             HttpRequest loginRequest = HttpRequest.newBuilder()
                     .uri(new URI(url + "login"))

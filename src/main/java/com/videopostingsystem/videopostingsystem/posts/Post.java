@@ -42,13 +42,13 @@ public class Post {
     private Date lastModifiedDate = new Date();
 
     @Column(nullable = true)
-    private String tag;
+    private String category;
 
-    public Post(String users, String title, String body, String tag) {
+
+    public Post(String users, String title, String body) {
         this.users = users;
         this.title = title;
         this.body = body;
-        this.tag = tag;
     }
 
     public Post(){
@@ -103,12 +103,12 @@ public class Post {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public String getTag() {
-        return tag;
+    public String getCategory() {
+        return category;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setCategory(String tag) {
+        this.category = tag;
     }
 
     @Override
@@ -116,12 +116,12 @@ public class Post {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Post post = (Post) o;
-        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(tag, post.tag);
+        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(category, post.category);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, users, title, body, creationDate, lastModifiedDate, tag);
+        return Objects.hash(id, users, title, body, creationDate, lastModifiedDate, category);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class Post {
                 ", body='" + body + '\'' +
                 ", creationDate=" + creationDate +
                 ", lastModifiedDate=" + lastModifiedDate +
-                ", tag='" + tag + '\'' +
+                ", tag='" + category + '\'' +
                 '}';
     }
 }
