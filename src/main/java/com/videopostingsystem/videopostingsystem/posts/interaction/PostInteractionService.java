@@ -8,30 +8,24 @@ import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
-@RestController
-public class InteractionRequest {
-
+@Service
+public class PostInteractionService {
     PostRepository postRepository;
     UserRepository userRepository;
     PostInteractionRepository postInteractionRepository;
 
-    public InteractionRequest(PostRepository postRepository, UserRepository userRepository, PostInteractionRepository postInteractionRepository){
+    public PostInteractionService(PostRepository postRepository, UserRepository userRepository, PostInteractionRepository postInteractionRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postInteractionRepository = postInteractionRepository;
     }
 
-
-    @PostMapping("/posts/{postId}")
-    public ResponseEntity<?> postInteraction(@PathVariable("postId") Long postId, @RequestBody PostInteractionModel postInteraction, HttpSession session){
+    public ResponseEntity<?> postInteraction(Long postId, PostInteractionModel postInteraction, HttpSession session){
         String loggedInUser = (String) session.getAttribute("loggedInUser");
         PostInteractions newPostInteraction;
-        if (loggedInUser != null){
+        if (loggedInUser != null && userRepository.findById(loggedInUser).isPresent()){
             Users user = userRepository.findById(loggedInUser).get();
             if (postRepository.findById(postId).isPresent()){
                 if (postInteraction.liked() || postInteraction.bookmark()) {
@@ -54,6 +48,7 @@ public class InteractionRequest {
                     else {
                         if (!user.getTopCategory().equals(post.getCategory())){
                             String category = UserLikeFrequencies.mostLikedCategory(session, userRepository, postRepository, postInteractionRepository);
+                            assert category != null;
                             if (!category.equals(user.getTopCategory())){
                                 user.setTopCategory(category);
                                 userRepository.save(user);
