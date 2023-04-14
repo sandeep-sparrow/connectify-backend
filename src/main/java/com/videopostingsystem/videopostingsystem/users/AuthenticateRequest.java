@@ -30,12 +30,15 @@ public class AuthenticateRequest {
                     if (signUp.security_clearance() != null) {
                         if (signUp.security_clearance().equals(CONSTANTS.security_clearance)) {
                             user = new Users(signUp.username(), signUp.password(), "ADMIN");
+                            user.setTopCategory("blank");
                             type = "admin";
                         } else {
                             user = new Users(signUp.username(), signUp.password(), "USER");
+                            user.setTopCategory("blank");
                         }
                     } else {
                         user = new Users(signUp.username(), signUp.password(), "USER");
+                        user.setTopCategory("blank");
                     }
                     userRepository.save(user);
                     session.setAttribute("loggedInUser", user.getUsername());

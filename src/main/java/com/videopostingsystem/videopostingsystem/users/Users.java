@@ -15,6 +15,7 @@ public class Users implements Serializable {
     private String username;
     private String password;
     private String type;
+    private String topCategory;
 
     public Users() {
     }
@@ -42,6 +43,14 @@ public class Users implements Serializable {
 
     public String getType() {
         return type;
+    }
+
+    public String getTopCategory() {
+        return topCategory;
+    }
+
+    public void setTopCategory(String topCategory) {
+        this.topCategory = topCategory;
     }
 
     public void setType(String type) {

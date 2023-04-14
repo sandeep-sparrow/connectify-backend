@@ -1,6 +1,7 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
 import com.videopostingsystem.videopostingsystem.OpenAPI;
+import com.videopostingsystem.videopostingsystem.recommendSystem.Feed;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +33,8 @@ public class PostRequest {
                 if (post.body().length() < 255 && post.body().length() > 10){
                     Users user = userRepository.getReferenceById(loggedInUser);
                     Post newPost = new Post(user.getUsername(), post.title(), post.body());
-                    String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the word of the category:" +
+                    String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
+                            "However, if you view the content as very offensive return the word 'Invalid':" +
                             "Technology\n" +
                             "Travel\n" +
                             "Food\n" +
@@ -56,7 +58,12 @@ public class PostRequest {
                             "Miscellaneous" +
                             "Here is the content:" +
                             post.title() + post.body());
+                    if (category.toLowerCase().equals("invalid")){
+                        return ResponseEntity.badRequest().body("Post upload failed. This content does not adhere to our post policies.");
+                    }
                     newPost.setCategory(category);
+                    newPost.setLikes(0L);
+                    newPost.setBookmarks(0L);
                     postRepository.save(newPost);
                     return ResponseEntity.ok(newPost);
                 }
@@ -118,6 +125,26 @@ public class PostRequest {
                 } else return ResponseEntity.badRequest().body("You can only edit your own posts.");
             }
             else return ResponseEntity.badRequest().body("Post ID not valid.");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+    }
+
+    @DeleteMapping("/post/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable("id") Long id, HttpSession session){
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser != null){
+            if (postRepository.findById(id).isPresent()){
+                Post post = postRepository.findById(id).get();
+                Users user = userRepository.findById(loggedInUser).get();
+                if (post.getUsers().equals(loggedInUser) || user.getType().equals("ADMIN")){
+                    postRepository.deleteById(id);
+                    return ResponseEntity.ok("Successfully deleted post!");
+                }
+                else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this post");
+                }
+            }
+            return ResponseEntity.badRequest().body("Invalid post");
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
     }

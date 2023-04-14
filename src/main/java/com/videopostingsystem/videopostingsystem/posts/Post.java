@@ -31,6 +31,10 @@ public class Post {
     @Column(nullable = false)
     private String body;
 
+    private Long likes;
+
+    private Long bookmarks;
+
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "creation_date")
@@ -111,29 +115,47 @@ public class Post {
         this.category = tag;
     }
 
+    public Long getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Long likes) {
+        this.likes = likes;
+    }
+
+    public Long getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(Long bookmarks) {
+        this.bookmarks = bookmarks;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Post post = (Post) o;
-        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(category, post.category);
+        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(likes, post.likes) && Objects.equals(bookmarks, post.bookmarks) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(category, post.category);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, users, title, body, creationDate, lastModifiedDate, category);
+        return Objects.hash(id, users, title, body, likes, bookmarks, creationDate, lastModifiedDate, category);
     }
 
     @Override
     public String toString() {
         return "Post{" +
                 "id=" + id +
-                ", user=" + users +
+                ", users='" + users + '\'' +
                 ", title='" + title + '\'' +
                 ", body='" + body + '\'' +
+                ", likes=" + likes +
+                ", bookmarks=" + bookmarks +
                 ", creationDate=" + creationDate +
                 ", lastModifiedDate=" + lastModifiedDate +
-                ", tag='" + category + '\'' +
+                ", category='" + category + '\'' +
                 '}';
     }
 }
