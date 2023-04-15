@@ -2,9 +2,7 @@ package com.videopostingsystem.videopostingsystem.users;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class AuthenticateRequest {
@@ -23,5 +21,15 @@ public class AuthenticateRequest {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthenticateModel login, HttpSession session) {
         return authenticateService.login(login, session);
+    }
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<?> deleteAccount(HttpSession session){
+        return authenticateService.deleteAccount(session);
+    }
+
+    @DeleteMapping("/delete-account/{user}")
+    public ResponseEntity<?> deleteAccountAdmin(@PathVariable("user") String user, HttpSession session){
+        return authenticateService.deleteAccountAdmin(user, session);
     }
 }

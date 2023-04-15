@@ -1,6 +1,5 @@
 package com.videopostingsystem.videopostingsystem.videos;
 
-import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,9 +24,8 @@ public class Video {
     )
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
+    @Column(name = "user_id")
+    private String user;
 
     private String link;
 
@@ -47,7 +45,7 @@ public class Video {
     private String summary;
     private String status;
 
-    public Video( Users user, String title, String link, String tag) {
+    public Video( String user, String title, String link, String tag) {
         this.user = user;
         this.title = title;
         this.link = link;
@@ -74,11 +72,11 @@ public class Video {
         this.id = id;
     }
 
-    public Users getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Users user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

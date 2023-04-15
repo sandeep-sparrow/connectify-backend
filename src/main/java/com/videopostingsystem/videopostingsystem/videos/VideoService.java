@@ -20,7 +20,7 @@ public class VideoService {
         String loggedInUser = (String) session.getAttribute("loggedInUser");
         if (loggedInUser != null){
             Users user = userRepository.getReferenceById(loggedInUser);
-            Video newVideo = new Video(user, video.title(), video.link(), video.tags());
+            Video newVideo = new Video(user.getUsername(), video.title(), video.link(), video.tags());
             newVideo.setSummary("");
             AssemblyAI videoProcessor = new AssemblyAI(video.link());
             String summary = videoProcessor.call();

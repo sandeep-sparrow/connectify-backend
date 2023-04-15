@@ -25,10 +25,16 @@ public class Post {
 
     private String users;
 
-    @Column(nullable = false)
+    @Column(
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
     private String title;
 
-    @Column(nullable = false)
+    @Column(
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
     private String body;
 
     private Long likes;
@@ -45,7 +51,7 @@ public class Post {
     @Column(name = "last_modified_date")
     private Date lastModifiedDate = new Date();
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String category;
 
 

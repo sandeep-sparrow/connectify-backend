@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VideoPostingSystemApplication {
+public class SocialMediaSystemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(VideoPostingSystemApplication.class, args);
+		SpringApplication.run(SocialMediaSystemApplication.class, args);
 	}
 
 }

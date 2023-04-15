@@ -1,16 +1,25 @@
 package com.videopostingsystem.videopostingsystem.users;
 
+import com.videopostingsystem.videopostingsystem.posts.Post;
+import com.videopostingsystem.videopostingsystem.posts.PostRepository;
+import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
+import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthenticateService {
     private final UserRepository userRepository;
-
-    public AuthenticateService(UserRepository userRepository) {
+    private final PostRepository postRepository;
+    private final PostInteractionRepository postInteractionRepository;
+    public AuthenticateService(UserRepository userRepository, PostRepository postRepository, PostInteractionRepository postInteractionRepository) {
         this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.postInteractionRepository = postInteractionRepository;
     }
 
     public ResponseEntity<?> signup(AuthenticateModel signUp, HttpSession session){
@@ -62,5 +71,42 @@ public class AuthenticateService {
         } else {
             return ResponseEntity.badRequest().body("Incorrect username");
         }
+    }
+
+    public ResponseEntity<?> deleteAccount(HttpSession session){
+        String user = (String) session.getAttribute("loggedInUser");
+        if (session.getAttribute("loggedInUser") != null && userRepository.findById(user).isPresent()){
+            List<PostInteractions> postInteractions = postInteractionRepository.findByUsers(user);
+            for (PostInteractions currPostInteraction : postInteractions){
+                postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers());
+            }
+            List<Post> posts = postRepository.findByUsers(user);
+            for (Post currPost : posts){
+                postRepository.deleteById(currPost.getId());
+            }
+            userRepository.deleteById((String) session.getAttribute("loggedInUser"));
+            return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + user + "!");
+        }
+        else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+    }
+
+    public ResponseEntity<?> deleteAccountAdmin(String user, HttpSession session){
+        String adminAccount = (String) session.getAttribute("loggedInUser");
+        if (adminAccount != null && userRepository.findById(adminAccount).isPresent()){
+            if (userRepository.findById(adminAccount).get().getType().equals("ADMIN")){
+                List<PostInteractions> postInteractions = postInteractionRepository.findByUsers(user);
+                for (PostInteractions currPostInteraction : postInteractions){
+                    postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers());
+                }
+                List<Post> posts = postRepository.findByUsers(user);
+                for (Post currPost : posts){
+                    postRepository.deleteById(currPost.getId());
+                }
+                userRepository.deleteById(user);
+                return ResponseEntity.ok("Successfully deleted user " + user);
+            }
+            else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this users account!");
+        }
+        else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
     }
 }

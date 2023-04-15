@@ -32,7 +32,7 @@ public class PostService {
             if (post.title().length() < 5 || post.title().length() > 50){
                 return ResponseEntity.badRequest().body("Title must be longer than 5 characters and less than 50 characters");
             }
-            if (post.body().length() < 255 && post.body().length() > 10){
+            if (post.body().length() < 500 && post.body().length() > 10){
                 Users user = userRepository.getReferenceById(loggedInUser);
                 Post newPost = new Post(user.getUsername(), post.title(), post.body());
                 String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
@@ -69,7 +69,7 @@ public class PostService {
                 postRepository.save(newPost);
                 return ResponseEntity.ok(newPost);
             }
-            else return ResponseEntity.badRequest().body("Body must be 10-255 characters long");
+            else return ResponseEntity.badRequest().body("Body must be 10-500 characters long");
 
         }
         else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
