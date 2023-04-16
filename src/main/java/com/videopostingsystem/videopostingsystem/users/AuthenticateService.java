@@ -1,5 +1,9 @@
 package com.videopostingsystem.videopostingsystem.users;
 
+import com.videopostingsystem.videopostingsystem.inbox.Inbox;
+import com.videopostingsystem.videopostingsystem.inbox.InboxRepository;
+import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLog;
+import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLogRepository;
 import com.videopostingsystem.videopostingsystem.mail.EmailSender;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -29,6 +34,8 @@ public class AuthenticateService {
     private final PostInteractionRepository postInteractionRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailSender emailSender;
+    private final MessageLogRepository messageLogRepository;
+    private final InboxRepository inboxRepository;
 
 
     public ResponseEntity<?> signup(AuthenticateModel signUp, HttpSession session){
@@ -98,56 +105,89 @@ public class AuthenticateService {
 
     @Transactional
     public ResponseEntity<?> deleteAccount(HttpSession session){
-        String user = (String) session.getAttribute("loggedInUser");
-        if (session.getAttribute("loggedInUser") == null || userRepository.findById(user).isEmpty()){
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (session.getAttribute("loggedInUser") == null || userRepository.findById(loggedInUser).isEmpty()){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
-        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(user).get());
+        Users user = userRepository.findById(loggedInUser).get();
+        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
         for (PostInteractions currPostInteraction : postInteractions){
             postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers().getUsername());
         }
-        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(user).get());
+        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
         for (Post currPost : posts){
             postRepository.deleteById(currPost.getId());
         }
-        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get());
+        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
         for (ConfirmationToken token : confirmationTokens){
             confirmationTokenRepository.deleteByToken(token.getToken());
         }
-        userRepository.deleteById(user);
-        return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + user + "!");
+        List<Inbox> inboxes = new ArrayList<>();
+        if (!inboxRepository.findByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+            inboxes.addAll(inboxes1);
+        }
+        if (!inboxRepository.findByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+            inboxes.addAll(inboxes2);
+        }
+        for (Inbox inbox: inboxes){
+            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            for (MessageLog messageLog : messageLogs){
+                messageLogRepository.deleteById(messageLog.getMessage_id());
+            }
+            inboxRepository.deleteById(inbox.getInboxId());
+        }
+
+        userRepository.deleteById(loggedInUser);
+        return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + loggedInUser + "!");
 
     }
 
     @Transactional
-    public ResponseEntity<?> deleteAccountAdmin(String user, HttpSession session) {
+    public ResponseEntity<?> deleteAccountAdmin(String deletedUser, HttpSession session) {
         String adminAccount = (String) session.getAttribute("loggedInUser");
         if (adminAccount == null || userRepository.findById(adminAccount).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
-        if (userRepository.findById(user).isEmpty()) {
+        if (userRepository.findById(deletedUser).isEmpty()) {
             return ResponseEntity.badRequest().body("user does not exist");
         }
+        Users user = userRepository.findById(deletedUser).get();
         if (!userRepository.findById(adminAccount).get().getType().equals(UserType.ADMIN)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this users account!");
         }
 
-        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(user).get());
+        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(deletedUser).get());
         for (PostInteractions currPostInteraction : postInteractions) {
             postInteractionRepository.deleteById(currPostInteraction.getPostID() + "_" + currPostInteraction.getUsers().getUsername());
         }
-        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(user).get());
+        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(deletedUser).get());
         for (Post currPost : posts) {
             postRepository.deleteById(currPost.getId());
         }
-        if (!confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get()).isEmpty()) {
-            List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get());
-            for (ConfirmationToken token : confirmationTokens) {
-                confirmationTokenRepository.deleteByToken(token.getToken());
-            }
-            userRepository.deleteById(user);
+        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(deletedUser).get());
+        for (ConfirmationToken token : confirmationTokens) {
+            confirmationTokenRepository.deleteByToken(token.getToken());
         }
-        return ResponseEntity.ok("Successfully deleted user " + user);
+        List<Inbox> inboxes = new ArrayList<>();
+        if (!inboxRepository.findByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+            inboxes.addAll(inboxes1);
+        }
+        if (!inboxRepository.findByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+            inboxes.addAll(inboxes2);
+        }
+        for (Inbox inbox: inboxes){
+            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            for (MessageLog messageLog : messageLogs){
+                messageLogRepository.deleteById(messageLog.getMessage_id());
+            }
+            inboxRepository.deleteById(inbox.getInboxId());
+        }
+        userRepository.deleteById(deletedUser);
+        return ResponseEntity.ok("Successfully deleted user " + deletedUser);
     }
 
     public boolean isValidEmail(String email){
