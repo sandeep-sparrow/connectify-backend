@@ -1,72 +1,47 @@
 package com.videopostingsystem.videopostingsystem.users;
 
-import com.videopostingsystem.videopostingsystem.OpenAPI;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class AuthenticateRequest {
 
-    private UserRepository userRepository;
+    private final AuthenticateService authenticateService;
 
-    public AuthenticateRequest(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AuthenticateRequest(AuthenticateService authenticateService) {
+        this.authenticateService = authenticateService;
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> signUp(@RequestBody AuthenticateModel signUp, HttpSession session) {
-        if (signUp != null) {
-            if (signUp.username() != null && signUp.password() != null) {
-                if (userRepository.findById(signUp.username()).isEmpty()) {
-                    if (signUp.username().length() < 8 || signUp.password().length() < 8) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credentials are not long enough");
-                    }
-                    Users user;
-                    String type = "user";
-                    if (signUp.security_clearance() != null) {
-                        if (signUp.security_clearance().equals(CONSTANTS.security_clearance)) {
-                            user = new Users(signUp.username(), signUp.password(), "ADMIN");
-                            user.setTopCategory("blank");
-                            type = "admin";
-                        } else {
-                            user = new Users(signUp.username(), signUp.password(), "USER");
-                            user.setTopCategory("blank");
-                        }
-                    } else {
-                        user = new Users(signUp.username(), signUp.password(), "USER");
-                        user.setTopCategory("blank");
-                    }
-                    userRepository.save(user);
-                    session.setAttribute("loggedInUser", user.getUsername());
-                    return ResponseEntity.ok().body("successfully created " + type + " account!");
-                }
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
-            } else {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
-        }
+    public ResponseEntity<?> signUp(@RequestBody AuthenticateModel signUp, HttpSession session) {
+        return authenticateService.signup(signUp, session);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthenticateModel login, HttpSession session) {
-        if (userRepository.findById(login.username()).isPresent()) {
-            Users user = userRepository.getReferenceById(login.username());
-            if (login.password().equals(user.getPassword())) {
-                // Set the user as logged into the session
-                session.setAttribute("loggedInUser", login.username());
-                return ResponseEntity.ok("Login successful");
-
-            } else {
-                return ResponseEntity.badRequest().body("Incorrect password");
-            }
-        } else {
-            return ResponseEntity.badRequest().body("Incorrect username");
-        }
+    public ResponseEntity<?> login(@RequestBody AuthenticateModel login, HttpSession session) {
+        return authenticateService.login(login, session);
     }
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<?> deleteAccount(HttpSession session){
+        return authenticateService.deleteAccount(session);
+    }
+
+    @DeleteMapping("/delete-account/{user}")
+    public ResponseEntity<?> deleteAccountAdmin(@PathVariable("user") String user, HttpSession session){
+        return authenticateService.deleteAccountAdmin(user, session);
+    }
+
+    @GetMapping(path = "/confirm")
+    public ResponseEntity<?> confirmToken(@RequestParam("token") String token){
+        System.out.println(token);
+        return authenticateService.confirmToken(token);
+    }
+
+    @PostMapping("/resend-code")
+    public ResponseEntity<?> resend(@RequestBody String email){
+        return authenticateService.resendToken(email);
+    }
+
 }

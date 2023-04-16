@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -13,14 +12,18 @@ public class Users implements Serializable {
 
     @Id
     private String username;
+    @Column(unique = true)
+    private String email;
     private String password;
     private String type;
     private String topCategory;
+    private Boolean enabled = false;
 
     public Users() {
     }
-    public Users(String username, String password, String type) {
+    public Users(String username, String email, String password, String type) {
         this.username = username;
+        this.email = email;
         this.password = password;
         this.type = type;
     }
@@ -55,5 +58,21 @@ public class Users implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
