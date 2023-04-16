@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/main/java/com/videopostingsystem/videopostingsystem/users/CONSTANTS.java
+/src/main/java/com/videopostingsystem/videopostingsystem/CONSTANTS.java
+/src/main/java/com/videopostingsystem/resources/application.properties
