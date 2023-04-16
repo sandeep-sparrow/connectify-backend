@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 @Entity
+@Table(name = "confirmation_token")
 @Getter
 @Setter
 @NoArgsConstructor

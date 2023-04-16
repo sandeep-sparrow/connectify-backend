@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class PostInteractionRequest {
+public class PostInteractionController {
 
     private final PostInteractionService postInteractionService;
 
-    public PostInteractionRequest(PostInteractionService postInteractionService){
+    public PostInteractionController(PostInteractionService postInteractionService){
         this.postInteractionService = postInteractionService;
     }
 

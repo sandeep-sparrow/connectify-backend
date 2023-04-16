@@ -1,4 +1,4 @@
-package com.videopostingsystem.videopostingsystem.inbox;
+package com.videopostingsystem.videopostingsystem.inbox.messagelog;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-public class MessageRequest {
+public class MessageController {
 
     private final MessageService messageService;
-    public MessageRequest(MessageService messageService) {
+    public MessageController(MessageService messageService) {
         this.messageService = messageService;
     }
 

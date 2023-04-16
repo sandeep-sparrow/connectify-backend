@@ -1,14 +1,19 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
+import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.persistence.*;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-
 import java.util.Date;
-import java.util.Objects;
 
 @Entity
 @Table(name = "posts")
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+@NoArgsConstructor
 public class Post {
 
     @Id
@@ -23,7 +28,9 @@ public class Post {
     )
     private Long id;
 
-    private String users;
+    @ManyToOne
+    @JoinColumn(name = "users", nullable = false)
+    private Users users;
 
     @Column(
             nullable = false,
@@ -37,9 +44,9 @@ public class Post {
     )
     private String body;
 
-    private Long likes;
+    private Long likes = 0L;
 
-    private Long bookmarks;
+    private Long bookmarks = 0L;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,113 +62,9 @@ public class Post {
     private String category;
 
 
-    public Post(String users, String title, String body) {
+    public Post(Users users, String title, String body) {
         this.users = users;
         this.title = title;
         this.body = body;
-    }
-
-    public Post(){
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsers() {
-        return users;
-    }
-
-    public void setUsers(String user) {
-        this.users = user;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Date getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Date lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String tag) {
-        this.category = tag;
-    }
-
-    public Long getLikes() {
-        return likes;
-    }
-
-    public void setLikes(Long likes) {
-        this.likes = likes;
-    }
-
-    public Long getBookmarks() {
-        return bookmarks;
-    }
-
-    public void setBookmarks(Long bookmarks) {
-        this.bookmarks = bookmarks;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Post post = (Post) o;
-        return Objects.equals(id, post.id) && Objects.equals(users, post.users) && Objects.equals(title, post.title) && Objects.equals(body, post.body) && Objects.equals(likes, post.likes) && Objects.equals(bookmarks, post.bookmarks) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastModifiedDate, post.lastModifiedDate) && Objects.equals(category, post.category);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, users, title, body, likes, bookmarks, creationDate, lastModifiedDate, category);
-    }
-
-    @Override
-    public String toString() {
-        return "Post{" +
-                "id=" + id +
-                ", users='" + users + '\'' +
-                ", title='" + title + '\'' +
-                ", body='" + body + '\'' +
-                ", likes=" + likes +
-                ", bookmarks=" + bookmarks +
-                ", creationDate=" + creationDate +
-                ", lastModifiedDate=" + lastModifiedDate +
-                ", category='" + category + '\'' +
-                '}';
     }
 }

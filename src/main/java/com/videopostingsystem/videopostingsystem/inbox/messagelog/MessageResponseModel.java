@@ -1,4 +1,4 @@
-package com.videopostingsystem.videopostingsystem.inbox;
+package com.videopostingsystem.videopostingsystem.inbox.messagelog;
 
 import java.util.Date;
 
