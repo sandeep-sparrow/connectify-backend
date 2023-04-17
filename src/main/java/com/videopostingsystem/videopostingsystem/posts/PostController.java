@@ -5,15 +5,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class PostRequest {
+public class PostController {
     private final PostService postService;
 
-    public PostRequest(PostService postService){
+    public PostController(PostService postService){
         this.postService = postService;
     }
 
     @PostMapping("/create-post")
-    public ResponseEntity<?> createPost(@RequestBody PostModel post, HttpSession session){
+    public ResponseEntity<?> createPost(@RequestBody PostInputModel post, HttpSession session){
             return postService.createPost(post, session);
         }
 
@@ -29,8 +29,8 @@ public class PostRequest {
     }
 
     @PutMapping("/post/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable("id") Long id, @RequestBody PostModel postModel, HttpSession session){
-        return postService.updatePost(id, postModel, session);
+    public ResponseEntity<?> updatePost(@PathVariable("id") Long id, @RequestBody PostInputModel postInputModel, HttpSession session){
+        return postService.updatePost(id, postInputModel, session);
     }
 
     @DeleteMapping("/post/{id}")

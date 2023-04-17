@@ -5,11 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class AuthenticateRequest {
+public class AuthenticateController {
 
     private final AuthenticateService authenticateService;
 
-    public AuthenticateRequest(AuthenticateService authenticateService) {
+    public AuthenticateController(AuthenticateService authenticateService) {
         this.authenticateService = authenticateService;
     }
 

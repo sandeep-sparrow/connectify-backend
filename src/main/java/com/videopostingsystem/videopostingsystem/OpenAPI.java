@@ -30,13 +30,8 @@ public class OpenAPI {
                 HttpResponse<String> postResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
                 String responseJson = postResponse.body();
                 ResponseBody response = gson.fromJson(responseJson, ResponseBody.class);
-                String message = response.getChoices()[0].getMessage().getContent();
-                return message;
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+                return response.getChoices()[0].getMessage().getContent();
+            } catch (URISyntaxException | IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }

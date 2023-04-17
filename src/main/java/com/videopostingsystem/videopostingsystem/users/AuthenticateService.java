@@ -1,5 +1,9 @@
 package com.videopostingsystem.videopostingsystem.users;
 
+import com.videopostingsystem.videopostingsystem.inbox.Inbox;
+import com.videopostingsystem.videopostingsystem.inbox.InboxRepository;
+import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLog;
+import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLogRepository;
 import com.videopostingsystem.videopostingsystem.mail.EmailSender;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
@@ -9,65 +13,65 @@ import com.videopostingsystem.videopostingsystem.users.token.ConfirmationToken;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationTokenRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@AllArgsConstructor
 public class AuthenticateService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostInteractionRepository postInteractionRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailSender emailSender;
+    private final MessageLogRepository messageLogRepository;
+    private final InboxRepository inboxRepository;
 
-    public AuthenticateService(UserRepository userRepository,
-                               PostRepository postRepository,
-                               PostInteractionRepository postInteractionRepository,
-                               ConfirmationTokenRepository confirmationTokenRepository,
-                               EmailSender emailSender) {
-        this.userRepository = userRepository;
-        this.postRepository = postRepository;
-        this.postInteractionRepository = postInteractionRepository;
-        this.confirmationTokenRepository = confirmationTokenRepository;
-        this.emailSender = emailSender;
-    }
 
     public ResponseEntity<?> signup(AuthenticateModel signUp, HttpSession session){
         session.setAttribute("loggedInUser", null);
-        if (signUp != null) {
-            if (signUp.username() != null && signUp.password() != null) {
-                if (userRepository.findById(signUp.username()).isEmpty()) {
-                    if (!isValidEmail(signUp.email())){
-                        return ResponseEntity.badRequest().body("invalid email provided!");
-                    }
-                    if (userRepository.findByEmail(signUp.email()).isPresent()){
-                        return ResponseEntity.badRequest().body("email is taken!");
-                    }
-                    if (signUp.username().length() < 8 || signUp.password().length() < 8) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credentials are not long enough");
-                    }
-                    Users user;
-                    String type = "user";
+        if (signUp == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
+        }
+        if (signUp.username() == null || signUp.password() == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
+        }
+        if (userRepository.findById(signUp.username()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
+        }
+        if (!isValidEmail(signUp.email())){
+            return ResponseEntity.badRequest().body("invalid email provided!");
+        }
+        if (userRepository.findByEmail(signUp.email()).isPresent()){
+            return ResponseEntity.badRequest().body("email is taken!");
+        }
+        if (signUp.username().length() < 8 || signUp.password().length() < 8) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credentials are not long enough");
+        }
+        Users user;
+        String type = "user";
 
                     if (signUp.security_clearance() != null) {
                         if (signUp.security_clearance().equals(CONSTANTS.security_clearance)) {
-                            user = new Users(signUp.username(), signUp.email(), signUp.password(), "ADMIN");
+                            user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.ADMIN);
                             user.setTopCategory("blank");
                             type = "admin";
                         } else {
-                            user = new Users(signUp.username(), signUp.email(), signUp.password(), "USER");
+                            user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.USER);
                             user.setTopCategory("blank");
                         }
                     } else {
-                        user = new Users(signUp.username(), signUp.email(), signUp.password(), "USER");
+                        user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.USER);
                         user.setTopCategory("blank");
                     }
                     userRepository.save(user); // save user to the database
@@ -82,84 +86,108 @@ public class AuthenticateService {
                     emailSender.sendEmail(signUp.email(), buildEmail(signUp.username(), link));
                     confirmationTokenRepository.save(confirmationToken);
                     return ResponseEntity.ok().body("successfully created " + type + " account! Check email to activate account.");
-                }
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
-            } else {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
-        }
     }
 
     public ResponseEntity<?> login(AuthenticateModel login, HttpSession session){
-        if (userRepository.findById(login.username()).isPresent()) {
-            Users user = userRepository.getReferenceById(login.username());
-            if (login.password().equals(user.getPassword())) {
-                if (!userRepository.getReferenceById(login.username()).getEnabled()){
-                    return ResponseEntity.badRequest().body("Account has not been activated!");
-                }
-                session.setAttribute("loggedInUser", login.username());
-                return ResponseEntity.ok("Login successful");
-
-            } else {
-                return ResponseEntity.badRequest().body("Incorrect password");
-            }
-        } else {
+        if (userRepository.findById(login.username()).isEmpty()) {
             return ResponseEntity.badRequest().body("Incorrect username");
         }
+            Users user = userRepository.getReferenceById(login.username());
+            if (!login.password().equals(user.getPassword())) {
+                return ResponseEntity.badRequest().body("Incorrect password");
+            }
+            if (!userRepository.getReferenceById(login.username()).getEnabled()){
+                return ResponseEntity.badRequest().body("Account has not been activated!");
+            }
+            session.setAttribute("loggedInUser", login.username());
+            return ResponseEntity.ok("Login successful");
     }
 
     @Transactional
     public ResponseEntity<?> deleteAccount(HttpSession session){
-        String user = (String) session.getAttribute("loggedInUser");
-        if (session.getAttribute("loggedInUser") != null && userRepository.findById(user).isPresent()){
-            List<PostInteractions> postInteractions = postInteractionRepository.findByUsers(user);
-            for (PostInteractions currPostInteraction : postInteractions){
-                postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers());
-            }
-            List<Post> posts = postRepository.findByUsers(user);
-            for (Post currPost : posts){
-                postRepository.deleteById(currPost.getId());
-            }
-            List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get());
-            for (ConfirmationToken token : confirmationTokens){
-                confirmationTokenRepository.deleteByToken(token.getToken());
-            }
-            userRepository.deleteById((String) session.getAttribute("loggedInUser"));
-            return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + user + "!");
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (session.getAttribute("loggedInUser") == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
-        else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        Users user = userRepository.findById(loggedInUser).get();
+        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        for (PostInteractions currPostInteraction : postInteractions){
+            postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers().getUsername());
+        }
+        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        for (Post currPost : posts){
+            postRepository.deleteById(currPost.getId());
+        }
+        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        for (ConfirmationToken token : confirmationTokens){
+            confirmationTokenRepository.deleteByToken(token.getToken());
+        }
+        List<Inbox> inboxes = new ArrayList<>();
+        if (!inboxRepository.findByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+            inboxes.addAll(inboxes1);
+        }
+        if (!inboxRepository.findByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+            inboxes.addAll(inboxes2);
+        }
+        for (Inbox inbox: inboxes){
+            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            for (MessageLog messageLog : messageLogs){
+                messageLogRepository.deleteById(messageLog.getMessage_id());
+            }
+            inboxRepository.deleteById(inbox.getInboxId());
+        }
+
+        userRepository.deleteById(loggedInUser);
+        return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + loggedInUser + "!");
+
     }
 
     @Transactional
-    public ResponseEntity<?> deleteAccountAdmin(String user, HttpSession session) {
+    public ResponseEntity<?> deleteAccountAdmin(String deletedUser, HttpSession session) {
         String adminAccount = (String) session.getAttribute("loggedInUser");
-        if (adminAccount != null && userRepository.findById(adminAccount).isPresent()) {
-            if (userRepository.findById(user).isEmpty()) {
-                return ResponseEntity.badRequest().body("user does not exist");
-            }
-            if (userRepository.findById(adminAccount).get().getType().equals("ADMIN")) {
-                List<PostInteractions> postInteractions = postInteractionRepository.findByUsers(user);
-                for (PostInteractions currPostInteraction : postInteractions) {
-                    postInteractionRepository.deleteById(currPostInteraction.getPostID() + "_" + currPostInteraction.getUsers());
-                }
-                List<Post> posts = postRepository.findByUsers(user);
-                for (Post currPost : posts) {
-                    postRepository.deleteById(currPost.getId());
-                }
-                if (!confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get()).isEmpty()) {
-                    List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(user).get());
-                    for (ConfirmationToken token : confirmationTokens) {
-                        confirmationTokenRepository.deleteByToken(token.getToken());
-                    }
-                    userRepository.deleteById(user);
-                    return ResponseEntity.ok("Successfully deleted user " + user);
-                } else
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this users account!");
-            }
+        if (adminAccount == null || userRepository.findById(adminAccount).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        if (userRepository.findById(deletedUser).isEmpty()) {
+            return ResponseEntity.badRequest().body("user does not exist");
+        }
+        Users user = userRepository.findById(deletedUser).get();
+        if (!userRepository.findById(adminAccount).get().getType().equals(UserType.ADMIN)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this users account!");
+        }
+
+        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(deletedUser).get());
+        for (PostInteractions currPostInteraction : postInteractions) {
+            postInteractionRepository.deleteById(currPostInteraction.getPostID() + "_" + currPostInteraction.getUsers().getUsername());
+        }
+        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(deletedUser).get());
+        for (Post currPost : posts) {
+            postRepository.deleteById(currPost.getId());
+        }
+        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(deletedUser).get());
+        for (ConfirmationToken token : confirmationTokens) {
+            confirmationTokenRepository.deleteByToken(token.getToken());
+        }
+        List<Inbox> inboxes = new ArrayList<>();
+        if (!inboxRepository.findByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+            inboxes.addAll(inboxes1);
+        }
+        if (!inboxRepository.findByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+            inboxes.addAll(inboxes2);
+        }
+        for (Inbox inbox: inboxes){
+            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            for (MessageLog messageLog : messageLogs){
+                messageLogRepository.deleteById(messageLog.getMessage_id());
+            }
+            inboxRepository.deleteById(inbox.getInboxId());
+        }
+        userRepository.deleteById(deletedUser);
+        return ResponseEntity.ok("Successfully deleted user " + deletedUser);
     }
 
     public boolean isValidEmail(String email){
