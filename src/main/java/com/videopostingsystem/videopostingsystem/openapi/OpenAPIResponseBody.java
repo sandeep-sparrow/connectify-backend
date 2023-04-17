@@ -1,6 +1,6 @@
-package com.videopostingsystem.videopostingsystem;
+package com.videopostingsystem.videopostingsystem.openapi;
 
-public class ResponseBody {
+public class OpenAPIResponseBody {
 
     private Choices[] choices;
 

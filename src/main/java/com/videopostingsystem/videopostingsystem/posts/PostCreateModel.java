@@ -1,4 +1,4 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
-public record PostInputModel(String title, String body) {
+public record PostCreateModel(String title, String body) {
 }
