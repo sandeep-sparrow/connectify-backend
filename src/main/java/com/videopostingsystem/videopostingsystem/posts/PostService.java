@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
 @Service
 @AllArgsConstructor
 public class PostService {
@@ -62,7 +61,8 @@ public class PostService {
                 "Miscellaneous" +
                 "Here is the content:" +
                 post.title() + post.body());
-        if (category.equalsIgnoreCase("invalid")){
+        category = category.toLowerCase();
+        if (category.contains("invalid")){
             return ResponseEntity.badRequest().body("Post upload failed. This content does not adhere to our post policies.");
         }
         newPost.setCategory(category);
