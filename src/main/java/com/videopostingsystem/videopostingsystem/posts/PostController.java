@@ -13,7 +13,7 @@ public class PostController {
     }
 
     @PostMapping("/create-post")
-    public ResponseEntity<?> createPost(@RequestBody PostInputModel post, HttpSession session){
+    public ResponseEntity<?> createPost(@RequestBody PostCreateModel post, HttpSession session){
             return postService.createPost(post, session);
         }
 
@@ -29,8 +29,8 @@ public class PostController {
     }
 
     @PutMapping("/post/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable("id") Long id, @RequestBody PostInputModel postInputModel, HttpSession session){
-        return postService.updatePost(id, postInputModel, session);
+    public ResponseEntity<?> updatePost(@PathVariable("id") Long id, @RequestBody PostCreateModel postCreateModel, HttpSession session){
+        return postService.updatePost(id, postCreateModel, session);
     }
 
     @DeleteMapping("/post/{id}")

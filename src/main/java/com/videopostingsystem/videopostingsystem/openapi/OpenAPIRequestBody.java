@@ -1,7 +1,7 @@
-package com.videopostingsystem.videopostingsystem;
+package com.videopostingsystem.videopostingsystem.openapi;
 
 
-public class RequestBody {
+public class OpenAPIRequestBody {
     private String model;
     private Messages[] messages;
     private double temperature;

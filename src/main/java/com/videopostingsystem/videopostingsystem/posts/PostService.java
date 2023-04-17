@@ -1,6 +1,6 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
-import com.videopostingsystem.videopostingsystem.OpenAPI;
+import com.videopostingsystem.videopostingsystem.openapi.OpenAPI;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
@@ -23,7 +23,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostInteractionRepository postInteractionRepository;
 
-    public ResponseEntity<?> createPost(PostInputModel post, HttpSession session){
+    public ResponseEntity<?> createPost(PostCreateModel post, HttpSession session){
         String loggedInUser = (String) session.getAttribute("loggedInUser");
         if (loggedInUser == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
@@ -67,7 +67,7 @@ public class PostService {
         }
         newPost.setCategory(category);
         postRepository.save(newPost);
-        return ResponseEntity.ok(new PostModel(newPost.getId(),
+        return ResponseEntity.ok(new PostResponseModel(newPost.getId(),
                 newPost.getUsers().getUsername(),
                 newPost.getTitle(),
                 newPost.getBody(),
@@ -84,9 +84,9 @@ public class PostService {
         }
 
         List<Post> posts = postRepository.findAll();
-        List<PostModel> modelPosts = new ArrayList<>();
+        List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
-            modelPosts.add(new PostModel(post.getId(),
+            modelPosts.add(new PostResponseModel(post.getId(),
                     post.getUsers().getUsername(),
                     post.getTitle(), post.getBody(),
                     post.getLikes(), post.getBookmarks(),
@@ -106,7 +106,7 @@ public class PostService {
             return ResponseEntity.badRequest().body("Post ID not valid.");
         }
         Post post = postRepository.findById(id).get();
-        return ResponseEntity.ok(new PostModel(post.getId(),
+        return ResponseEntity.ok(new PostResponseModel(post.getId(),
                 post.getUsers().getUsername(),
                 post.getTitle(), post.getBody(),
                 post.getLikes(), post.getBookmarks(),
@@ -114,7 +114,7 @@ public class PostService {
                 post.getCategory()));
     }
 
-    public ResponseEntity<?> updatePost(Long id, PostInputModel postInputModel, HttpSession session){
+    public ResponseEntity<?> updatePost(Long id, PostCreateModel postCreateModel, HttpSession session){
         String loggedInUser = (String) session.getAttribute("loggedInUser");
         if (loggedInUser == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
@@ -128,14 +128,14 @@ public class PostService {
             return ResponseEntity.badRequest().body("You can only edit your own posts.");
         }
 
-        if (postInputModel.body() == null || postInputModel.body().length() > 200 || postInputModel.body().length() < 10){
+        if (postCreateModel.body() == null || postCreateModel.body().length() > 200 || postCreateModel.body().length() < 10){
             return ResponseEntity.badRequest().body("Body must be 10-200 characters long");
         }
-        postObj.setBody(postInputModel.body());
-        if (postInputModel.title() == null || postInputModel.title().length() > 100 || postInputModel.title().length() < 5){
+        postObj.setBody(postCreateModel.body());
+        if (postCreateModel.title() == null || postCreateModel.title().length() > 100 || postCreateModel.title().length() < 5){
             return ResponseEntity.badRequest().body("Title must be between 5-100 characters");
         }
-        postObj.setTitle(postInputModel.title());
+        postObj.setTitle(postCreateModel.title());
         postObj.setLastModifiedDate(new Date());
 
         postRepository.save(postObj);
