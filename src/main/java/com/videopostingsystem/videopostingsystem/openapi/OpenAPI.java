@@ -18,6 +18,8 @@ public class OpenAPI {
             openAPIRequestBody.setTemperature(0.7);
             String json = gson.toJson(openAPIRequestBody);
 
+            System.out.println(json);
+
             try {
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                         .uri(new URI("https://api.openai.com/v1/chat/completions"))
