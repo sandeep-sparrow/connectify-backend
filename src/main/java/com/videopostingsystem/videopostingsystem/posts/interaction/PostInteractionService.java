@@ -2,7 +2,7 @@ package com.videopostingsystem.videopostingsystem.posts.interaction;
 
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
-import com.videopostingsystem.videopostingsystem.recommendSystem.UserLikeFrequencies;
+import com.videopostingsystem.videopostingsystem.recommendSystem.FeedService;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.servlet.http.HttpSession;
@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -50,7 +52,7 @@ public class PostInteractionService {
         }
         else {
             if (!user.getTopCategory().equals(post.getCategory())){
-                String category = UserLikeFrequencies.mostLikedCategory(session, userRepository, postRepository, postInteractionRepository);
+                String category = Objects.requireNonNull(FeedService.likedCategories(session, userRepository, postRepository, postInteractionRepository))[0];
                 assert category != null;
                 if (!category.equals(user.getTopCategory())){
                     user.setTopCategory(category);

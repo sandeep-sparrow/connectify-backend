@@ -13,9 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class EmailSender {
-    private final static Logger LOGGER = LoggerFactory
-            .getLogger(EmailSender.class);
-    private final JavaMailSender mailSender;
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(EmailSender.class);
+    private JavaMailSender mailSender;
+
 
     @Async
     public void sendEmail(String to, String email) {
@@ -27,9 +28,10 @@ public class EmailSender {
             helper.setSubject("Confirm your email");
             helper.setFrom("connectifyalerts@gmail.com");
             mailSender.send(mimeMessage);
-        }catch (MessagingException e) {
+        } catch (MessagingException e) {
             LOGGER.error("failed to send email", e);
             throw new IllegalStateException("failed to send email");
         }
     }
 }
+
