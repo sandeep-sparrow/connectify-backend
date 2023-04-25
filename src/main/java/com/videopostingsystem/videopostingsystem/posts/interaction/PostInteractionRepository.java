@@ -10,5 +10,5 @@ import java.util.List;
 public interface PostInteractionRepository extends JpaRepository<PostInteractions, String> {
     List<PostInteractions> findAllByUsers(Users users);
     List<PostInteractions> findAllByPostID(Long postID);
-
+    void deleteAllByPostID(Long postID);
 }

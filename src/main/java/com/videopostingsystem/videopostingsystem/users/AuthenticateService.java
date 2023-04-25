@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
@@ -111,12 +110,14 @@ public class AuthenticateService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
         Users user = userRepository.findById(loggedInUser).get();
-        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
-        for (PostInteractions currPostInteraction : postInteractions){
+        List<PostInteractions> postInteractionsByUser = postInteractionRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        for (PostInteractions currPostInteraction : postInteractionsByUser){
             postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers().getUsername());
         }
+
         List<Post> posts = postRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
         for (Post currPost : posts){
+            postInteractionRepository.deleteAllByPostID(currPost.getId());
             postRepository.deleteById(currPost.getId());
         }
         List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(loggedInUser).get());

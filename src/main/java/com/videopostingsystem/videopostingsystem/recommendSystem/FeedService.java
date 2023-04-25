@@ -1,6 +1,5 @@
 package com.videopostingsystem.videopostingsystem.recommendSystem;
 
-import com.sun.tools.jconsole.JConsoleContext;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
 import com.videopostingsystem.videopostingsystem.posts.PostResponseModel;
@@ -37,8 +36,7 @@ public class FeedService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not logged in.");
         }
         Users user = userRepository.findById(username).get();
-        if (user.getTopCategory().equalsIgnoreCase("blank") || postRepository.findAllByUsers(user).isEmpty()){
-            System.out.println("testtttttt");
+        if (user.getTopCategory().equalsIgnoreCase("blank") || postInteractionRepository.findAllByUsers(user).isEmpty()){
             Pageable pageable = PageRequest.of(0, 10);
             List<Post> mostLikedPosts = postRepository.findAllByOrderByLikesDesc(pageable);
             List<PostResponseModel> posts = new ArrayList<>();
