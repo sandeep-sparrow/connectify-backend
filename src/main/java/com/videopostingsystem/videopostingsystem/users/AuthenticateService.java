@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
@@ -100,7 +101,7 @@ public class AuthenticateService {
                 return ResponseEntity.badRequest().body("Account has not been activated!");
             }
             session.setAttribute("loggedInUser", login.username());
-            return ResponseEntity.ok("Login successful");
+            return ResponseEntity.ok(session.getId());
     }
 
     @Transactional

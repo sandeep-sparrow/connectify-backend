@@ -1,5 +1,7 @@
 package com.videopostingsystem.videopostingsystem.posts.interaction;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
 import com.videopostingsystem.videopostingsystem.recommendSystem.FeedService;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Objects;
 
 @Service
@@ -64,5 +67,41 @@ public class PostInteractionService {
         return ResponseEntity.ok(newPostInteraction);
 
 
+    }
+
+    public ResponseEntity<?> getPostInteraction(Long postId, String type, HttpSession session) {
+        System.out.println("test2");
+        System.out.println(type);
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+        if (postInteractionRepository.findById(postId + "_" + loggedInUser).isEmpty()){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User has not interacted with post");
+        }
+        System.out.println("dddd");
+        if (type.equalsIgnoreCase("both")){
+            Gson gson = new Gson();
+            boolean liked = postInteractionRepository.findById(postId + "_" + loggedInUser).get().isLiked();
+            boolean bookmarked = postInteractionRepository.findById(postId + "_" + loggedInUser).get().isBookmark();
+            PostInteractionModel postInteractionModel = new PostInteractionModel(liked, bookmarked);
+            String json = gson.toJson(postInteractionModel);
+            return ResponseEntity.ok().body(json);
+        }
+        if (type.equalsIgnoreCase("liked")) {
+            boolean liked = postInteractionRepository.findById(postId + "_" + loggedInUser).get().isLiked();
+            Gson gson = new Gson();
+            ResultModel resultModel = new ResultModel(liked);
+            //TODO fix this unrecognized json.
+            String json = gson.toJson(resultModel);
+            return ResponseEntity.ok().body(json);
+        } else if (type.equalsIgnoreCase("bookmarked")) {
+            boolean bookmarked = postInteractionRepository.findById(postId + "_" + loggedInUser).get().isBookmark();
+            return ResponseEntity.ok().body(Collections.singletonMap("result", bookmarked));
+        }
+
+        else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Need to input liked or bookmarked");
+        }
     }
 }
