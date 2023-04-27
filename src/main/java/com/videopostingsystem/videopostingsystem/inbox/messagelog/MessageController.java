@@ -23,8 +23,13 @@ public class MessageController {
         return messageService.getMessageLogs(user2, session);
     }
 
-    @GetMapping("/inbox")
+    @GetMapping("/unread-inbox")
     public ResponseEntity<?> getUnreadInboxes(HttpSession session){
         return messageService.getUnreadInboxes(session);
+    }
+
+    @GetMapping("/inbox")
+    public ResponseEntity<?> getInboxes(HttpSession session){
+        return messageService.getInboxes(session);
     }
 }

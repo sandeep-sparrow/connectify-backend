@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface InboxRepository extends JpaRepository<Inbox, String> {
-    List<Inbox> findByUser1(Users user1);
-    List<Inbox> findByUser2(Users user2);
+    List<Inbox> findAllByUser1(Users user1);
+    List<Inbox> findAllByUser2(Users user2);
 }

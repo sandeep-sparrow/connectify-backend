@@ -44,4 +44,8 @@ public class AuthenticateController {
         return authenticateService.resendToken(email);
     }
 
+    @GetMapping("/getUsername")
+    public ResponseEntity<?> myUsername(HttpSession session){
+        return authenticateService.getUsername(session);
+    }
 }

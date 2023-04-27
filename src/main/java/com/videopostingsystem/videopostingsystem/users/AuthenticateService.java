@@ -125,16 +125,16 @@ public class AuthenticateService {
             confirmationTokenRepository.deleteByToken(token.getToken());
         }
         List<Inbox> inboxes = new ArrayList<>();
-        if (!inboxRepository.findByUser1(user).isEmpty()){
-            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+        if (!inboxRepository.findAllByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findAllByUser1(user);
             inboxes.addAll(inboxes1);
         }
-        if (!inboxRepository.findByUser2(user).isEmpty()){
-            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+        if (!inboxRepository.findAllByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findAllByUser2(user);
             inboxes.addAll(inboxes2);
         }
         for (Inbox inbox: inboxes){
-            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            List<MessageLog> messageLogs = messageLogRepository.findAllByInbox(inbox);
             for (MessageLog messageLog : messageLogs){
                 messageLogRepository.deleteById(messageLog.getMessage_id());
             }
@@ -173,16 +173,16 @@ public class AuthenticateService {
             confirmationTokenRepository.deleteByToken(token.getToken());
         }
         List<Inbox> inboxes = new ArrayList<>();
-        if (!inboxRepository.findByUser1(user).isEmpty()){
-            List<Inbox> inboxes1 = inboxRepository.findByUser1(user);
+        if (!inboxRepository.findAllByUser1(user).isEmpty()){
+            List<Inbox> inboxes1 = inboxRepository.findAllByUser1(user);
             inboxes.addAll(inboxes1);
         }
-        if (!inboxRepository.findByUser2(user).isEmpty()){
-            List<Inbox> inboxes2 = inboxRepository.findByUser2(user);
+        if (!inboxRepository.findAllByUser2(user).isEmpty()){
+            List<Inbox> inboxes2 = inboxRepository.findAllByUser2(user);
             inboxes.addAll(inboxes2);
         }
         for (Inbox inbox: inboxes){
-            List<MessageLog> messageLogs = messageLogRepository.findByInbox(inbox);
+            List<MessageLog> messageLogs = messageLogRepository.findAllByInbox(inbox);
             for (MessageLog messageLog : messageLogs){
                 messageLogRepository.deleteById(messageLog.getMessage_id());
             }
@@ -250,6 +250,15 @@ public class AuthenticateService {
         String link  =  "http://localhost:8080/confirm?token="+token;
         emailSender.sendEmail(email, buildEmail(users.getUsername(), link));
         return ResponseEntity.ok("Activation link resent! Check your email inbox to activate your account!");
+    }
+
+    public ResponseEntity<?> getUsername(HttpSession session){
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.badRequest().body("User not logged in");
+        }
+        return ResponseEntity.ok(loggedInUser);
+
     }
 
     private String buildEmail(String name, String link) {

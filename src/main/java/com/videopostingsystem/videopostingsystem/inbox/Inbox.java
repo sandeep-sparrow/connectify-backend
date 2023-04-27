@@ -4,6 +4,8 @@ import com.videopostingsystem.videopostingsystem.users.Users;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "inbox")
 @Getter
@@ -22,6 +24,7 @@ public class Inbox {
     @JoinColumn(name = "user2", nullable = false)
     private Users user2;
     private String last_message;
+    private Date timeSent;
     private boolean unread;
 
     public Inbox(Users user1, Users user2, String last_message) {
@@ -29,6 +32,7 @@ public class Inbox {
         this.user2 = user2;
         this.last_message = last_message;
         this.unread = true;
+        this.timeSent = new Date();
         this.inboxId = user1.getUsername() + "_" + user2.getUsername();
     }
 }
