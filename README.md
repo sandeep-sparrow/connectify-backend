@@ -1,5 +1,7 @@
 # Social Media API
-The Social Media API is a mock social media API built using the Spring framework in Java. It allows users to create, update, and delete posts, as well as upload videos which are passed into AssemblyAI's API to get a summary of the video. The posts are also run through OpenAI's API to categorize each post into one of 20 categories. In the near future, search implementation and recommended posts based on past consumed content will be added. It also includes a message inbox system between 2 users.
+The Social Media API is a mock social media API built using the Spring framework in Java. It allows users to create, update, and delete posts.
+
+The posts are also run through OpenAI's API to categorize each post into one of 20 categories. In the near future, search implementation and recommended posts based on past consumed content will be added. It also includes a message inbox system between 2 users.
 
 ## Technologies Used
 The Social Media API is built using the following technologies:
@@ -15,8 +17,6 @@ Docker
 The database is stored in a Docker container, which is built using the PostgreSQL image. This allows for easy setup and deployment of the API.
 
 ## The API also utilizes the following external APIs:
-
-AssemblyAI's API for video summarization
 
 OpenAI's API for post categorization
 
