@@ -1,5 +1,6 @@
 package com.videopostingsystem.videopostingsystem.posts;
 
+import com.google.gson.Gson;
 import com.videopostingsystem.videopostingsystem.openapi.OpenAPI;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
@@ -24,20 +25,29 @@ public class PostService {
     private final PostInteractionRepository postInteractionRepository;
 
     public ResponseEntity<?> createPost(PostCreateModel post, HttpSession session){
+        Gson gson = new Gson();
+        PostStatus status;
+        String json;
         String loggedInUser = (String) session.getAttribute("loggedInUser");
         if (loggedInUser == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+            status = new PostStatus("invalid", "User not logged in.");
+            json = gson.toJson(status);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(json);
         }
         if (post.title() == null || post.title().length() < 5 || post.title().length() > 50){
-            return ResponseEntity.badRequest().body("Title must be longer than 5 characters and less than 50 characters");
+            status = new PostStatus("invalid", "Title must be longer than 5 characters and less than 50 characters");
+            json = gson.toJson(status);
+            return ResponseEntity.badRequest().body(json);
         }
         if (post.body() == null || post.body().length() > 500 || post.body().length() < 10) {
-            return ResponseEntity.badRequest().body("Body must be 10-500 characters long");
+            status = new PostStatus("invalid", "Body must be between 10-500 characters");
+            json = gson.toJson(status);
+            return ResponseEntity.badRequest().body(json);
         }
         Users user = userRepository.getReferenceById(loggedInUser);
         Post newPost = new Post(user, post.title(), post.body());
         String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
-                "However, if you view the content as very offensive return the word 'Invalid':" +
+                "However, if you view the content as very offensive return the word 'Invalid'. Only return 'Invalid' on posts very offensive or racist. Do not categorize as 'Invalid' if it is just risque.:" +
                 "Technology\n" +
                 "Travel\n" +
                 "Food\n" +
@@ -63,18 +73,15 @@ public class PostService {
                 post.title() + post.body());
         category = category.toLowerCase();
         if (category.contains("invalid")){
-            return ResponseEntity.badRequest().body("Post upload failed. This content does not adhere to our post policies.");
+            status = new PostStatus("invalid", "This content does not adhere to our post policies.");
+            json = gson.toJson(status);
+            return ResponseEntity.badRequest().body(json);
         }
         newPost.setCategory(category);
         postRepository.save(newPost);
-        return ResponseEntity.ok(new PostResponseModel(newPost.getId(),
-                newPost.getUsers().getUsername(),
-                newPost.getTitle(),
-                newPost.getBody(),
-                newPost.getLikes(),
-                newPost.getBookmarks(),
-                newPost.getLastModifiedDate(),
-                newPost.getCategory()));
+        status = new PostStatus("valid", "successfully posted!");
+        json = gson.toJson(status);
+        return ResponseEntity.ok(json);
     }
 
     public ResponseEntity<?> allPosts(HttpSession session){

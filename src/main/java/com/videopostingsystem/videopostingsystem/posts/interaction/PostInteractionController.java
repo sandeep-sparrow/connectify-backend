@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:63343")
 public class PostInteractionController {
 
     private final PostInteractionService postInteractionService;
