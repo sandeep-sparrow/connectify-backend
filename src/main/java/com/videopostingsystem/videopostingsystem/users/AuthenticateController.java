@@ -48,4 +48,24 @@ public class AuthenticateController {
     public ResponseEntity<?> myUsername(HttpSession session){
         return authenticateService.getUsername(session);
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(HttpSession session){
+        return authenticateService.getProfile(session);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UpdateProfileModel updateProfileModel, HttpSession session){
+        return authenticateService.updateProfile(updateProfileModel, session);
+    }
+
+    @GetMapping("/{user}")
+    public ResponseEntity<?> getUserProfile(@PathVariable("user") String user, HttpSession session){
+        return authenticateService.getUserProfile(user, session);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getUsers(HttpSession session){
+        return authenticateService.getUsers(session);
+    }
 }

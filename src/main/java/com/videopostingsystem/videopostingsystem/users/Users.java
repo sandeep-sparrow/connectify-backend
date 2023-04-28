@@ -24,6 +24,8 @@ public class Users implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserType type;
     private String topCategory;
+    private String country = "Unknown";
+    private String bio = "I'm new here!";
     private Boolean enabled = false;
 
     public Users(String username, String email, String password, UserType type) {

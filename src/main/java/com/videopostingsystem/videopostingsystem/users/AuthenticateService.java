@@ -1,5 +1,7 @@
 package com.videopostingsystem.videopostingsystem.users;
 
+import com.google.gson.Gson;
+import com.videopostingsystem.videopostingsystem.UserProfileModel;
 import com.videopostingsystem.videopostingsystem.inbox.Inbox;
 import com.videopostingsystem.videopostingsystem.inbox.InboxRepository;
 import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLog;
@@ -261,6 +263,67 @@ public class AuthenticateService {
 
     }
 
+    public ResponseEntity<?> getProfile(HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.badRequest().body("User not logged in");
+        }
+        Gson gson = new Gson();
+        Users user = userRepository.findById(loggedInUser).get();
+        String json = gson.toJson(user);
+        System.out.println(json);
+        return ResponseEntity.ok(json);
+    }
+
+    public ResponseEntity<?> updateProfile(UpdateProfileModel updateProfileModel, HttpSession session){
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.badRequest().body("User not logged in");
+        }
+        Gson gson = new Gson();
+        Users users = userRepository.findById(loggedInUser).get();
+        if (updateProfileModel.bio() != null && !updateProfileModel.bio().equals("")){
+            users.setBio(updateProfileModel.bio());
+        }
+        if (updateProfileModel.country() != null && !updateProfileModel.country().equals("")){
+            users.setCountry(updateProfileModel.country());
+        }
+        userRepository.save(users);
+        String json = gson.toJson(users);
+        return ResponseEntity.ok(json);
+    }
+
+    public ResponseEntity<?> getUserProfile(String user, HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.badRequest().body("User not logged in");
+        }
+        if (user == null || userRepository.findById(user).isEmpty()){
+            return ResponseEntity.badRequest().body("User does not exist");
+        }
+        Gson gson = new Gson();
+        Users userDetails = userRepository.findById(user).get();
+        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory());
+        String json = gson.toJson(userProfileModel);
+        System.out.println(json);
+        return ResponseEntity.ok(json);
+    }
+
+    public ResponseEntity<?> getUsers(HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.badRequest().body("User not logged in");
+        }
+        List<Users> users = userRepository.findAll();
+        List<UserProfileModel> userProfileList = new ArrayList<>();
+        for (Users user : users){
+            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory()));
+        }
+        Gson gson = new Gson();
+        String json = gson.toJson(userProfileList);
+        return ResponseEntity.ok(json);
+    }
+
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
                 "\n" +
@@ -329,4 +392,6 @@ public class AuthenticateService {
                 "\n" +
                 "</div></div>";
     }
+
+
 }
