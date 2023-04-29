@@ -288,6 +288,9 @@ public class AuthenticateService {
         if (updateProfileModel.country() != null && !updateProfileModel.country().equals("")){
             users.setCountry(updateProfileModel.country());
         }
+        users.setCardColor(updateProfileModel.cardColor());
+        users.setBackgroundColor(updateProfileModel.backgroundColor());
+
         userRepository.save(users);
         String json = gson.toJson(users);
         return ResponseEntity.ok(json);
@@ -303,7 +306,7 @@ public class AuthenticateService {
         }
         Gson gson = new Gson();
         Users userDetails = userRepository.findById(user).get();
-        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory());
+        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor());
         String json = gson.toJson(userProfileModel);
         System.out.println(json);
         return ResponseEntity.ok(json);
@@ -317,7 +320,7 @@ public class AuthenticateService {
         List<Users> users = userRepository.findAll();
         List<UserProfileModel> userProfileList = new ArrayList<>();
         for (Users user : users){
-            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory()));
+            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor()));
         }
         Gson gson = new Gson();
         String json = gson.toJson(userProfileList);

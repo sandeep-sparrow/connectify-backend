@@ -55,7 +55,7 @@ public class MessageService {
                 MessageLog messageLog = new MessageLog(inbox, user, messageModel.receiver(), messageModel.message());
                 messageLogRepository.save(messageLog);
                 inboxRepository.save(inbox);
-                return ResponseEntity.ok(new MessageResponseModel(messageLog.getMessage_id(), messageLog.getSender(), messageLog.getMessage(), messageLog.getTimeSent()));
+                return ResponseEntity.ok(new MessageResponseModel(messageLog.getMessage_id(), messageLog.getReceiver(), messageLog.getMessage(), messageLog.getTimeSent()));
             }
         }
         else {
@@ -169,7 +169,7 @@ public class MessageService {
             }
             else {
                 if (inbox.isUnread() && messageLogs.get(messageLogs.size()-1).getSender().equals(loggedInUser)) {
-                    formattedInboxes.add(new InboxResponseModel(inbox.getUser2().getUsername(), inbox.getLast_message(), false, inbox.getTimeSent()));
+                    formattedInboxes.add(new InboxResponseModel(inbox.getUser1().getUsername(), inbox.getLast_message(), false, inbox.getTimeSent()));
                 }
                 else {
                 formattedInboxes.add(new InboxResponseModel(inbox.getUser1().getUsername(), inbox.getLast_message(), inbox.isUnread(), inbox.getTimeSent()));

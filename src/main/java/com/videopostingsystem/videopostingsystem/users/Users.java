@@ -27,6 +27,8 @@ public class Users implements Serializable {
     private String country = "Unknown";
     private String bio = "I'm new here!";
     private Boolean enabled = false;
+    private String cardColor = "white";
+    private String backgroundColor = "whitesmoke";
 
     public Users(String username, String email, String password, UserType type) {
         this.username = username;
