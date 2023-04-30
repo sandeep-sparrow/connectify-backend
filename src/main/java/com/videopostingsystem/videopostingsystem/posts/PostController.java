@@ -23,6 +23,11 @@ public class PostController {
         return postService.allPosts(session);
     }
 
+    @GetMapping("/posts/{user}")
+    public ResponseEntity<?> getUserPosts(@PathVariable("user") String user, HttpSession session){
+        return postService.getUserPosts(user, session);
+    }
+
     @GetMapping("/post/{id}")
     public ResponseEntity<?> getPost(@PathVariable("id") Long id, HttpSession session){
         return postService.getPost(id, session);

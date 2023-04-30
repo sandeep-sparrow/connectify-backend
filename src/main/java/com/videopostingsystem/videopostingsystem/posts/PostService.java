@@ -172,4 +172,29 @@ public class PostService {
         return ResponseEntity.ok("Successfully deleted post!");
     }
 
+    public ResponseEntity<?> getUserPosts(String user, HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+        if (user == null || userRepository.findById(user).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid user");
+        }
+        Users userObj = userRepository.findById(user).get();
+        if (postRepository.findAllByUsers(userObj) == null) {
+            return ResponseEntity.ok("");
+        }
+
+        List<Post> posts = postRepository.findAllByUsers(userObj);
+        List<PostResponseModel> modelPosts = new ArrayList<>();
+        for (Post post : posts){
+            modelPosts.add(new PostResponseModel(post.getId(),
+                    post.getUsers().getUsername(),
+                    post.getTitle(), post.getBody(),
+                    post.getLikes(), post.getBookmarks(),
+                    post.getLastModifiedDate(),
+                    post.getCategory()));
+        }
+        return ResponseEntity.ok(modelPosts);
+    }
 }
