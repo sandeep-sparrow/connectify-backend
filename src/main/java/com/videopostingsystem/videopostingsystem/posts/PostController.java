@@ -33,6 +33,11 @@ public class PostController {
         return postService.getPost(id, session);
     }
 
+    @GetMapping("/my-posts")
+    public ResponseEntity<?> myPosts(HttpSession session){
+        return postService.myPosts(session);
+    }
+
     @PutMapping("/post/{id}")
     public ResponseEntity<?> updatePost(@PathVariable("id") Long id, @RequestBody PostCreateModel postCreateModel, HttpSession session){
         return postService.updatePost(id, postCreateModel, session);

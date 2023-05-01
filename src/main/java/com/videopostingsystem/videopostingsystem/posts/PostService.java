@@ -138,11 +138,46 @@ public class PostService {
         if (postCreateModel.body() == null || postCreateModel.body().length() > 200 || postCreateModel.body().length() < 10){
             return ResponseEntity.badRequest().body("Body must be 10-200 characters long");
         }
-        postObj.setBody(postCreateModel.body());
         if (postCreateModel.title() == null || postCreateModel.title().length() > 100 || postCreateModel.title().length() < 5){
             return ResponseEntity.badRequest().body("Title must be between 5-100 characters");
         }
+
+        String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
+                "However, if you view the content as very offensive return the word 'Invalid'. Only return 'Invalid' on posts very offensive or racist. Do not categorize as 'Invalid' if it is just risque.:" +
+                "Technology\n" +
+                "Travel\n" +
+                "Food\n" +
+                "Fashion\n" +
+                "Sports\n" +
+                "Health\n" +
+                "Beauty\n" +
+                "Music\n" +
+                "Gaming\n" +
+                "Finance\n" +
+                "Education\n" +
+                "Art\n" +
+                "Politics\n" +
+                "Science\n" +
+                "Environment\n" +
+                "Literature\n" +
+                "Business\n" +
+                "Entertainment\n" +
+                "Social issues\n" +
+                "History" +
+                "Miscellaneous" +
+                "Here is the content:" +
+                postCreateModel.title() + postCreateModel.body());
+        category = category.toLowerCase();
+        if (category.contains("invalid")){
+            PostStatus status = new PostStatus("invalid", "This content does not adhere to our post policies.");
+            Gson gson = new Gson();
+            String json = gson.toJson(status);
+            return ResponseEntity.badRequest().body(json);
+        }
+
+        postObj.setBody(postCreateModel.body());
         postObj.setTitle(postCreateModel.title());
+        postObj.setCategory(category);
         postObj.setLastModifiedDate(new Date());
 
         postRepository.save(postObj);
@@ -181,11 +216,24 @@ public class PostService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid user");
         }
         Users userObj = userRepository.findById(user).get();
-        if (postRepository.findAllByUsers(userObj) == null) {
+        return postGetter(userObj);
+    }
+
+    public ResponseEntity<?> myPosts(HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+        Users user = userRepository.findById(loggedInUser).get();
+        return postGetter(user);
+    }
+
+    public ResponseEntity<?> postGetter(Users user){
+        if (postRepository.findAllByUsers(user) == null) {
             return ResponseEntity.ok("");
         }
 
-        List<Post> posts = postRepository.findAllByUsers(userObj);
+        List<Post> posts = postRepository.findAllByUsers(user);
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
             modelPosts.add(new PostResponseModel(post.getId(),
