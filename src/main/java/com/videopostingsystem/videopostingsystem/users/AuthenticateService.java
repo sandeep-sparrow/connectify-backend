@@ -83,7 +83,7 @@ public class AuthenticateService {
                             LocalDateTime.now().plusMinutes(15),
                             user
                     );
-                    String link  =  "http://localhost:8080/confirm?token="+token;
+                    String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
                     emailSender.sendEmail(signUp.email(), buildEmail(signUp.username(), link));
                     confirmationTokenRepository.save(confirmationToken);
                     return ResponseEntity.ok().body("successfully created " + type + " account! Check email to activate account.");
@@ -248,7 +248,7 @@ public class AuthenticateService {
                 users
         );
         confirmationTokenRepository.save(confirmationToken);
-        String link  =  "http://localhost:8080/confirm?token="+token;
+        String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
         emailSender.sendEmail(email, buildEmail(users.getUsername(), link));
         return ResponseEntity.ok("Activation link resent! Check your email inbox to activate your account!");
     }
