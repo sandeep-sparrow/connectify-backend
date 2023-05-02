@@ -33,7 +33,6 @@ public class AuthenticateController {
         return authenticateService.deleteAccountAdmin(user, session);
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping(path = "/confirm")
     public ResponseEntity<?> confirmToken(@RequestParam("token") String token){
         System.out.println(token);
