@@ -1,7 +1,6 @@
 package com.videopostingsystem.videopostingsystem.users;
 
 import com.google.gson.Gson;
-import com.videopostingsystem.videopostingsystem.UserProfileModel;
 import com.videopostingsystem.videopostingsystem.inbox.Inbox;
 import com.videopostingsystem.videopostingsystem.inbox.InboxRepository;
 import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLog;

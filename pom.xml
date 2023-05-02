@@ -42,8 +42,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.26</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
