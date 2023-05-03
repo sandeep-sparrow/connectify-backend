@@ -1,7 +1,6 @@
 package com.videopostingsystem.videopostingsystem.users;
 
 import com.google.gson.Gson;
-import com.videopostingsystem.videopostingsystem.UserProfileModel;
 import com.videopostingsystem.videopostingsystem.inbox.Inbox;
 import com.videopostingsystem.videopostingsystem.inbox.InboxRepository;
 import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLog;
@@ -84,7 +83,7 @@ public class AuthenticateService {
                             LocalDateTime.now().plusMinutes(15),
                             user
                     );
-                    String link  =  "http://localhost:8080/confirm?token="+token;
+                    String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
                     emailSender.sendEmail(signUp.email(), buildEmail(signUp.username(), link));
                     confirmationTokenRepository.save(confirmationToken);
                     return ResponseEntity.ok().body("successfully created " + type + " account! Check email to activate account.");
@@ -249,7 +248,7 @@ public class AuthenticateService {
                 users
         );
         confirmationTokenRepository.save(confirmationToken);
-        String link  =  "http://localhost:8080/confirm?token="+token;
+        String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
         emailSender.sendEmail(email, buildEmail(users.getUsername(), link));
         return ResponseEntity.ok("Activation link resent! Check your email inbox to activate your account!");
     }

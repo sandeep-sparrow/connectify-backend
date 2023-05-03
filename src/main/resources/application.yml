@@ -3,15 +3,17 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5332/user_db
-    username: noahsolomon
-    password: password
+    url: ${MYSQL_DATABASE_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    hikari:
+      max-lifetime: 20000
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
         format_sql: true
     show-sql: false
   main:
