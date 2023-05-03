@@ -84,8 +84,10 @@ public class FeedService {
         List<PostInteractions> postInteractionsList = postInteractionRepository.findAllByUsers(userRepository.findById(user).get());
         Map<String, Integer> categoryCountMap = new HashMap<>();
         for (PostInteractions postInteractions : postInteractionsList) {
-            Post post = postRepository.findById(postInteractions.getPostID()).get();
-            categoryCountMap.put(post.getCategory(), categoryCountMap.getOrDefault(post.getCategory(), 0) + 1);
+            if (postRepository.findById(postInteractions.getPostID()).isPresent()){
+                Post post = postRepository.findById(postInteractions.getPostID()).get();
+                categoryCountMap.put(post.getCategory(), categoryCountMap.getOrDefault(post.getCategory(), 0) + 1);
+            }
         }
         List<Map.Entry<String, Integer>> sortedCategoryEntries = new ArrayList<>(categoryCountMap.entrySet());
         sortedCategoryEntries.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));

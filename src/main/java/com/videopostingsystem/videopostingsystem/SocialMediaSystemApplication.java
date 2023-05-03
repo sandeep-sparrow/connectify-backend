@@ -16,7 +16,7 @@ public class SocialMediaSystemApplication {
 			public void addCorsMappings(CorsRegistry registry) {
 
 				registry.addMapping("/**")
-						.allowedOrigins("https://appconnectify.herokuapp.com/")
+						.allowedOrigins("http://localhost:63343")
 						.allowedMethods("*")
 						.allowedHeaders("*")
 						.allowCredentials(true);
