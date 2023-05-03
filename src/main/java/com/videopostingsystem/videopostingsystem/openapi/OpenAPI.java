@@ -29,7 +29,9 @@ public class OpenAPI {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpResponse<String> postResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
                 String responseJson = postResponse.body();
+                System.out.println(responseJson);
                 OpenAPIResponseBody response = gson.fromJson(responseJson, OpenAPIResponseBody.class);
+                System.out.println(response);
                 return response.getChoices()[0].getMessage().getContent();
             } catch (URISyntaxException | IOException | InterruptedException e) {
                 throw new RuntimeException(e);
