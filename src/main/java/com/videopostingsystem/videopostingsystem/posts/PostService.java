@@ -46,7 +46,7 @@ public class PostService {
         }
         Users user = userRepository.getReferenceById(loggedInUser);
         Post newPost = new Post(user, post.title(), post.body());
-        String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. Cussing is ok." +
+        String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
                 "However, if you view the content as very offensive return the word 'Invalid'. Only return 'Invalid' on posts very offensive or racist. Do not categorize as 'Invalid' if it is just risque.:" +
                 "Technology\n" +
                 "Travel\n" +
@@ -142,7 +142,7 @@ public class PostService {
             return ResponseEntity.badRequest().body("Title must be between 5-100 characters");
         }
 
-        String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. Cussing is ok." +
+        String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
                 "However, if you view the content as very offensive return the word 'Invalid'. Only return 'Invalid' on posts very offensive or racist. Do not categorize as 'Invalid' if it is just risque.:" +
                 "Technology\n" +
                 "Travel\n" +
