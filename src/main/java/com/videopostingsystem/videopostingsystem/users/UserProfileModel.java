@@ -1,4 +1,4 @@
-package com.videopostingsystem.videopostingsystem;
+package com.videopostingsystem.videopostingsystem.users;
 
 import lombok.*;
 

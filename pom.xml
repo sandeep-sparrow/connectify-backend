@@ -42,8 +42,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.26</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -62,7 +63,6 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
-			<version>6.1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>

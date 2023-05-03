@@ -32,7 +32,7 @@ public class AuthenticateController {
     public ResponseEntity<?> deleteAccountAdmin(@PathVariable("user") String user, HttpSession session){
         return authenticateService.deleteAccountAdmin(user, session);
     }
-
+    
     @GetMapping(path = "/confirm")
     public ResponseEntity<?> confirmToken(@RequestParam("token") String token){
         System.out.println(token);

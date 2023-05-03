@@ -14,8 +14,9 @@ public class SocialMediaSystemApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+
 				registry.addMapping("/**")
-						.allowedOrigins("http://localhost:63343")
+						.allowedOrigins("https://appconnectify.herokuapp.com/")
 						.allowedMethods("*")
 						.allowedHeaders("*")
 						.allowCredentials(true);
