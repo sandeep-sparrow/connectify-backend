@@ -14,6 +14,7 @@ public class UserProfileModel {
     private String topCategory;
     private String cardColor;
     private String backgroundColor;
+    private String profilePic;
 
 
 }

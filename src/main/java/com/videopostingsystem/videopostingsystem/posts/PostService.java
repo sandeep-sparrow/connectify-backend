@@ -2,6 +2,8 @@ package com.videopostingsystem.videopostingsystem.posts;
 
 import com.google.gson.Gson;
 import com.videopostingsystem.videopostingsystem.openapi.OpenAPI;
+import com.videopostingsystem.videopostingsystem.posts.comments.Comment;
+import com.videopostingsystem.videopostingsystem.posts.comments.CommentRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
@@ -23,6 +25,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostInteractionRepository postInteractionRepository;
+    private final CommentRepository commentRepository;
 
     public ResponseEntity<?> createPost(PostCreateModel post, HttpSession session){
         Gson gson = new Gson();
@@ -201,6 +204,12 @@ public class PostService {
 
         for (PostInteractions currPostInteraction : postInteractions){
             postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers());
+        }
+
+        List<Comment> comments = commentRepository.findAllByPost(post);
+
+        for (Comment comment : comments){
+            commentRepository.deleteById(comment.getId());
         }
 
         postRepository.deleteById(id);

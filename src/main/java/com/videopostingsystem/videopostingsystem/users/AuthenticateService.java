@@ -287,6 +287,10 @@ public class AuthenticateService {
         if (updateProfileModel.country() != null && !updateProfileModel.country().equals("")){
             users.setCountry(updateProfileModel.country());
         }
+        System.out.println(updateProfileModel.profilePic());
+        if (updateProfileModel.profilePic() != null && !updateProfileModel.profilePic().equals("")){
+            users.setProfilePic(updateProfileModel.profilePic());
+        }
         users.setCardColor(updateProfileModel.cardColor());
         users.setBackgroundColor(updateProfileModel.backgroundColor());
 
@@ -305,7 +309,7 @@ public class AuthenticateService {
         }
         Gson gson = new Gson();
         Users userDetails = userRepository.findById(user).get();
-        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor());
+        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor(), userDetails.getProfilePic());
         String json = gson.toJson(userProfileModel);
         System.out.println(json);
         return ResponseEntity.ok(json);
@@ -319,7 +323,7 @@ public class AuthenticateService {
         List<Users> users = userRepository.findAll();
         List<UserProfileModel> userProfileList = new ArrayList<>();
         for (Users user : users){
-            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor()));
+            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor(), user.getProfilePic()));
         }
         Gson gson = new Gson();
         String json = gson.toJson(userProfileList);
