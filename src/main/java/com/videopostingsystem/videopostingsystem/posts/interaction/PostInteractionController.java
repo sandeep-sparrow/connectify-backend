@@ -24,4 +24,9 @@ public class PostInteractionController {
         System.out.println("test");
         return postInteractionService.getPostInteraction(postId, session);
     }
+
+    @GetMapping("likes/{postId}")
+    public ResponseEntity<?> getPostLikes(@PathVariable("postId") Long postId, HttpSession session){
+        return postInteractionService.getPostLikes(postId, session);
+    }
 }
