@@ -8,6 +8,8 @@ import com.videopostingsystem.videopostingsystem.inbox.messagelog.MessageLogRepo
 import com.videopostingsystem.videopostingsystem.mail.EmailSender;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
+import com.videopostingsystem.videopostingsystem.posts.comments.Comment;
+import com.videopostingsystem.videopostingsystem.posts.comments.CommentRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationToken;
@@ -37,6 +39,7 @@ public class AuthenticateService {
     private final EmailSender emailSender;
     private final MessageLogRepository messageLogRepository;
     private final InboxRepository inboxRepository;
+    private final CommentRepository commentRepository;
 
 
     public ResponseEntity<?> signup(AuthenticateModel signUp, HttpSession session){
@@ -83,7 +86,7 @@ public class AuthenticateService {
                             LocalDateTime.now().plusMinutes(15),
                             user
                     );
-                    String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
+                    String link  =  "http://localhost:8080/confirm?token="+token;
                     emailSender.sendEmail(signUp.email(), buildEmail(signUp.username(), link));
                     confirmationTokenRepository.save(confirmationToken);
                     return ResponseEntity.ok().body("successfully created " + type + " account! Check email to activate account.");
@@ -111,17 +114,32 @@ public class AuthenticateService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
         Users user = userRepository.findById(loggedInUser).get();
-        List<PostInteractions> postInteractionsByUser = postInteractionRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
-        for (PostInteractions currPostInteraction : postInteractionsByUser){
-            postInteractionRepository.deleteById(currPostInteraction.getPostID()+"_"+currPostInteraction.getUsers().getUsername());
-        }
 
-        List<Post> posts = postRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(user);
+        for (PostInteractions postInteraction : postInteractions){
+            Post post = postRepository.findById(postInteraction.getPostID()).get();
+            if (postInteraction.isLiked()){
+                post.setLikes(post.getLikes()-1);
+            }
+            if (postInteraction.isBookmark()){
+                post.setBookmarks(post.getBookmarks()-1);
+            }
+            postRepository.save(post);
+        }
+        postInteractionRepository.deleteAllByUsers(user);
+
+        List<Post> posts = postRepository.findAllByUsers(user);
         for (Post currPost : posts){
+            List<Comment> comments = commentRepository.findAllByPost(currPost);
+
+            for (Comment comment : comments){
+                commentRepository.deleteById(comment.getId());
+            }
+
             postInteractionRepository.deleteAllByPostID(currPost.getId());
             postRepository.deleteById(currPost.getId());
         }
-        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(userRepository.findById(loggedInUser).get());
+        List<ConfirmationToken> confirmationTokens = confirmationTokenRepository.findAllByUsers(user);
         for (ConfirmationToken token : confirmationTokens){
             confirmationTokenRepository.deleteByToken(token.getToken());
         }
@@ -248,7 +266,7 @@ public class AuthenticateService {
                 users
         );
         confirmationTokenRepository.save(confirmationToken);
-        String link  =  "https://connectifymedia.herokuapp.com/confirm?token="+token;
+        String link  =  "http://localhost:8080/confirm?token="+token;
         emailSender.sendEmail(email, buildEmail(users.getUsername(), link));
         return ResponseEntity.ok("Activation link resent! Check your email inbox to activate your account!");
     }

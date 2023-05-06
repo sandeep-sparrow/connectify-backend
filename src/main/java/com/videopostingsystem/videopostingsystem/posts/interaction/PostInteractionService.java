@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.Objects;
 
 @Service
@@ -31,17 +32,23 @@ public class PostInteractionService {
         if (postRepository.findById(postId).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid post ID provided");
         }
+        Post post = postRepository.findById(postId).get();
         if (!postInteraction.liked() && !postInteraction.bookmark()) {
             if (postInteractionRepository.findById(postId + "_" + loggedInUser).isEmpty()){
                 return null;
             }
             else {
+                if (postInteractionRepository.findById(postId + "_" + loggedInUser).get().isLiked()){
+                    post.setLikes(post.getLikes()-1);
+                }
+                if (postInteractionRepository.findById(postId + "_" + loggedInUser).get().isBookmark()){
+                    post.setBookmarks(post.getBookmarks()-1);
+                }
+                postRepository.save(post);
                 postInteractionRepository.deleteById(postId + "_" + loggedInUser);
                 return ResponseEntity.ok().body("removed post " + postId + " from users interactions");
             }
-
         }
-        Post post = postRepository.findById(postId).get();
         if (postInteractionRepository.findById(postId + "_" + loggedInUser).isEmpty()){
             if (postInteraction.liked()){
                 post.setLikes(post.getLikes()+1);
@@ -78,13 +85,13 @@ public class PostInteractionService {
 
     public ResponseEntity<?> getPostInteraction(Long postId, HttpSession session) {
         String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
         Gson gson = new Gson();
         PostInteractionModel postInteractionModel = new PostInteractionModel(false, false);
 
         String json = gson.toJson(postInteractionModel);
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
         if (postInteractionRepository.findById(postId + "_" + loggedInUser).isEmpty()){
             return ResponseEntity.ok().body(json);
         }
@@ -93,5 +100,13 @@ public class PostInteractionService {
             postInteractionModel = new PostInteractionModel(liked, bookmarked);
             json = gson.toJson(postInteractionModel);
             return ResponseEntity.ok().body(json);
+    }
+
+    public ResponseEntity<?> getPostLikes(Long postId, HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+        return ResponseEntity.ok(postInteractionRepository.findAllLikedByPostID(postId).size());
     }
 }
