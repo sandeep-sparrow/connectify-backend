@@ -1,6 +1,6 @@
 package com.videopostingsystem.videopostingsystem.users.notification;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +15,12 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications")
-    public ResponseEntity<?> getNotifications(HttpSession session){
-        return notificationService.getNotifications(session);
+    public ResponseEntity<?> getNotifications(HttpServletRequest request){
+        return notificationService.getNotifications(request);
     }
 
     @DeleteMapping("/delete-notifications")
-    public ResponseEntity<?> removeAllNotifications(HttpSession session){
-        return notificationService.removeAllNotifications(session);
+    public ResponseEntity<?> removeAllNotifications(HttpServletRequest request){
+        return notificationService.removeAllNotifications(request);
     }
 }

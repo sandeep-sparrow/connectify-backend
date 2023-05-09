@@ -3,9 +3,10 @@ package com.videopostingsystem.videopostingsystem.users.follow;
 import com.google.gson.Gson;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
 import com.videopostingsystem.videopostingsystem.users.notification.NotificationService;
 import com.videopostingsystem.videopostingsystem.users.notification.NotificationType;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,20 +18,13 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class FollowService {
-    UserRepository userRepository;
-    FollowRepository followRepository;
+    private final UserRepository userRepository;
+    private final FollowRepository followRepository;
     @Autowired
-    NotificationService notificationService;
+    private final NotificationService notificationService;
+    private final JwtService jwtService;
 
-    public ResponseEntity<?> getFollowCount(String user, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user not logged in");
-        }
-        if (userRepository.findById(user).isEmpty() || !userRepository.findById(user).get().getEnabled()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("invalid user");
-        }
-
+    public ResponseEntity<?> getFollowCount(String user){
         Users userObj = userRepository.findById(user).get();
 
         List<Follow> followerList = followRepository.findAllByFollowing(userObj);
@@ -43,16 +37,9 @@ public class FollowService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> isUserFollowed(String user, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user not logged in");
-        }
-        if (userRepository.findById(user).isEmpty() || !userRepository.findById(user).get().getEnabled()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("invalid user");
-        }
-
-        Users userObj = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> isUserFollowed(String user, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
         Users followingObj = userRepository.findById(user).get();
         Gson gson = new Gson();
         IsFollowedResponseModel isFollowedResponseModel;
@@ -65,16 +52,9 @@ public class FollowService {
         return ResponseEntity.ok(gson.toJson(isFollowedResponseModel));
     }
 
-    public ResponseEntity<?> followEvent(String user, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user not logged in");
-        }
-        if (userRepository.findById(user).isEmpty() || !userRepository.findById(user).get().getEnabled()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("invalid user");
-        }
-
-        Users userObj = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> followEvent(String user, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
         Users followingObj = userRepository.findById(user).get();
 
         if (followRepository.existsByFollowerAndFollowing(userObj, followingObj)){
@@ -87,16 +67,12 @@ public class FollowService {
         return ResponseEntity.status(HttpStatus.CREATED).body("User successfully followed");
     }
 
-    public ResponseEntity<?> unfollowEvent(String user, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user not logged in");
-        }
+    public ResponseEntity<?> unfollowEvent(String user, HttpServletRequest request){
         if (userRepository.findById(user).isEmpty() || !userRepository.findById(user).get().getEnabled()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("invalid user");
         }
-
-        Users userObj = userRepository.findById(loggedInUser).get();
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
         Users followingObj = userRepository.findById(user).get();
 
         if (followRepository.existsByFollowerAndFollowing(userObj, followingObj)){

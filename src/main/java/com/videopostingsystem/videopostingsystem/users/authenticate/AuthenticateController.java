@@ -1,6 +1,5 @@
 package com.videopostingsystem.videopostingsystem.users.authenticate;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +24,12 @@ public class AuthenticateController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signUp(@RequestBody AuthenticateModel signUp, HttpSession session) {
-        return authenticateService.signup(signUp, session);
+    public ResponseEntity<?> signUp(@RequestBody RegisterRequest signUp) {
+        return authenticateService.signup(signUp);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthenticateModel login, HttpSession session) {
-        return authenticateService.login(login, session);
+    public ResponseEntity<?> login(@RequestBody AuthenticationRequest login) {
+        return authenticateService.login(login);
     }
 }

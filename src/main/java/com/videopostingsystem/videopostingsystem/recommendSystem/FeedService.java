@@ -7,11 +7,11 @@ import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteracti
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
-import jakarta.servlet.http.HttpSession;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -24,17 +24,15 @@ import java.util.Map;
 @AllArgsConstructor
 public class FeedService {
 
-    UserRepository userRepository;
-    PostRepository postRepository;
-    PostInteractionRepository postInteractionRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final PostInteractionRepository postInteractionRepository;
+    private final JwtService jwtService;
 
 
-    public ResponseEntity<?> feed(HttpSession session){
+    public ResponseEntity<?> feed(HttpServletRequest request){
         int responseSize = 10;
-        String username = (String) session.getAttribute("loggedInUser");
-        if (username == null || userRepository.findById(username).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not logged in.");
-        }
+        String username = jwtService.getUsername(request);
         Users user = userRepository.findById(username).get();
         if (user.getTopCategory().equalsIgnoreCase("blank") || postInteractionRepository.findAllByUsers(user).isEmpty()){
             Pageable pageable = PageRequest.of(0, 10);
@@ -46,7 +44,7 @@ public class FeedService {
             return ResponseEntity.ok(posts);
         }
 
-        String[] topCategories = likedCategories(session, userRepository, postRepository, postInteractionRepository);
+        String[] topCategories = likedCategories(username, userRepository, postRepository, postInteractionRepository);
         assert topCategories != null;
         float[] frequencies = frequency(topCategories.length);
 
@@ -75,13 +73,9 @@ public class FeedService {
         }
         return new float[]{0.6f, 0.2f, 0.2f};
     }
-    public static String[] likedCategories(HttpSession session, UserRepository userRepository, PostRepository postRepository, PostInteractionRepository postInteractionRepository) {
-        String user = ((String) session.getAttribute("loggedInUser"));
-        if (user == null || userRepository.findById(user).isEmpty()) {
-            return null;
-        }
+    public static String[] likedCategories(String username, UserRepository userRepository, PostRepository postRepository, PostInteractionRepository postInteractionRepository) {
 
-        List<PostInteractions> postInteractionsList = postInteractionRepository.findAllByUsers(userRepository.findById(user).get());
+        List<PostInteractions> postInteractionsList = postInteractionRepository.findAllByUsers(userRepository.findById(username).get());
         Map<String, Integer> categoryCountMap = new HashMap<>();
         for (PostInteractions postInteractions : postInteractionsList) {
             if (postRepository.findById(postInteractions.getPostID()).isPresent()){

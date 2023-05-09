@@ -3,9 +3,9 @@ package com.videopostingsystem.videopostingsystem.users.notification;
 import com.google.gson.Gson;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
-import jakarta.servlet.http.HttpSession;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +17,11 @@ import java.util.List;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
-    public ResponseEntity<?> getNotifications(HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (session.getAttribute("loggedInUser") == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-        Users user = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> getNotifications(HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
         List<Notification> notifications = notificationRepository.findAllByUsers(user);
         List<NotificationResponseModel> notificationResponseModel = new ArrayList<>();
         for (Notification notification : notifications){
@@ -33,12 +31,9 @@ public class NotificationService {
         return ResponseEntity.ok(gson.toJson(notificationResponseModel));
     }
 
-    public ResponseEntity<?> removeAllNotifications(HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (session.getAttribute("loggedInUser") == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-        Users user = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> removeAllNotifications(HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
         List<Notification> userNotifications = notificationRepository.findAllByUsers(user);
         for (Notification notification: userNotifications){
             notificationRepository.deleteById(notification.getId());

@@ -11,9 +11,10 @@ import com.videopostingsystem.videopostingsystem.posts.comments.Comment;
 import com.videopostingsystem.videopostingsystem.posts.comments.CommentRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractionRepository;
 import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteractions;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationToken;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationTokenRepository;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,14 +34,12 @@ public class UserService {
     private final MessageLogRepository messageLogRepository;
     private final InboxRepository inboxRepository;
     private final CommentRepository commentRepository;
+    private final JwtService jwtService;
 
     @Transactional
-    public ResponseEntity<?> deleteAccount(HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (session.getAttribute("loggedInUser") == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-        Users user = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> deleteAccount(HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
 
         List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(user);
         for (PostInteractions postInteraction : postInteractions){
@@ -87,22 +86,19 @@ public class UserService {
             inboxRepository.deleteById(inbox.getInboxId());
         }
 
-        userRepository.deleteById(loggedInUser);
-        return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + loggedInUser + "!");
+        userRepository.deleteById(username);
+        return ResponseEntity.ok("Successfully deleted account. We're sad to see you go, " + username + "!");
 
     }
 
     @Transactional
-    public ResponseEntity<?> deleteAccountAdmin(String deletedUser, HttpSession session) {
-        String adminAccount = (String) session.getAttribute("loggedInUser");
-        if (adminAccount == null || userRepository.findById(adminAccount).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> deleteAccountAdmin(String deletedUser, HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
         if (userRepository.findById(deletedUser).isEmpty()) {
             return ResponseEntity.badRequest().body("user does not exist");
         }
         Users user = userRepository.findById(deletedUser).get();
-        if (!userRepository.findById(adminAccount).get().getType().equals(UserType.ADMIN)) {
+        if (!userRepository.findById(username).get().getType().equals(UserType.ADMIN)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this users account!");
         }
 
@@ -138,34 +134,24 @@ public class UserService {
         return ResponseEntity.ok("Successfully deleted user " + deletedUser);
     }
 
-    public ResponseEntity<?> getUsername(HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.badRequest().body("User not logged in");
-        }
-        return ResponseEntity.ok(loggedInUser);
+    public ResponseEntity<?> getUsername(HttpServletRequest request){
+        return ResponseEntity.ok(jwtService.getUsername(request));
 
     }
 
-    public ResponseEntity<?> getProfile(HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.badRequest().body("User not logged in");
-        }
+    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
         Gson gson = new Gson();
-        Users user = userRepository.findById(loggedInUser).get();
+        Users user = userRepository.findById(username).get();
         String json = gson.toJson(user);
         System.out.println(json);
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> updateProfile(UpdateProfileModel updateProfileModel, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.badRequest().body("User not logged in");
-        }
+    public ResponseEntity<?> updateProfile(UpdateProfileModel updateProfileModel, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
         Gson gson = new Gson();
-        Users users = userRepository.findById(loggedInUser).get();
+        Users users = userRepository.findById(username).get();
         if (updateProfileModel.bio() != null && !updateProfileModel.bio().equals("")){
             users.setBio(updateProfileModel.bio());
         }
@@ -184,11 +170,7 @@ public class UserService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> getUserProfile(String user, HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.badRequest().body("User not logged in");
-        }
+    public ResponseEntity<?> getUserProfile(String user) {
         if (user == null || userRepository.findById(user).isEmpty()){
             return ResponseEntity.badRequest().body("User does not exist");
         }
@@ -200,11 +182,7 @@ public class UserService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> getUsers(HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()){
-            return ResponseEntity.badRequest().body("User not logged in");
-        }
+    public ResponseEntity<?> getUsers() {
         List<Users> users = userRepository.findAll();
         List<UserProfileModel> userProfileList = new ArrayList<>();
         for (Users user : users){

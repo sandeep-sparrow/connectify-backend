@@ -1,6 +1,6 @@
 package com.videopostingsystem.videopostingsystem.posts.comments;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +12,12 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/comment/{postID}")
-    public ResponseEntity<?> createComment(@PathVariable("postID") Long postID, @RequestBody String content, HttpSession session){
-        return commentService.createComment(postID, content, session);
+    public ResponseEntity<?> createComment(@PathVariable("postID") Long postID, @RequestBody String content, HttpServletRequest request){
+        return commentService.createComment(postID, content, request);
     }
 
     @GetMapping("/comment/{postID}")
-    public ResponseEntity<?> getPostComments(@PathVariable("postID") Long postID, HttpSession session){
-        return commentService.getPostComments(postID, session);
+    public ResponseEntity<?> getPostComments(@PathVariable("postID") Long postID){
+        return commentService.getPostComments(postID);
     }
 }

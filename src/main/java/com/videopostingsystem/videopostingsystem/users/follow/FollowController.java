@@ -1,6 +1,6 @@
 package com.videopostingsystem.videopostingsystem.users.follow;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,23 +17,23 @@ public class FollowController {
     }
 
     @GetMapping("/{user}/follow-count")
-    public ResponseEntity<?> getFollowCount(@PathVariable("user") String user, HttpSession session){
-        return followService.getFollowCount(user, session);
+    public ResponseEntity<?> getFollowCount(@PathVariable("user") String user){
+        return followService.getFollowCount(user);
     }
 
     @GetMapping("/{user}/followed")
-    public ResponseEntity<?> isUserFollowed(@PathVariable("user") String user, HttpSession session){
-        return followService.isUserFollowed(user, session);
+    public ResponseEntity<?> isUserFollowed(@PathVariable("user") String user, HttpServletRequest request){
+        return followService.isUserFollowed(user, request);
     }
 
     @PostMapping("/{user}/follow")
-    public ResponseEntity<?> followEvent(@PathVariable("user") String user, HttpSession session){
-        return followService.followEvent(user, session);
+    public ResponseEntity<?> followEvent(@PathVariable("user") String user, HttpServletRequest request){
+        return followService.followEvent(user, request);
     }
 
     @PostMapping("/{user}/unfollow")
-    public ResponseEntity<?> unfollowEvent(@PathVariable("user") String user, HttpSession session){
-        return followService.unfollowEvent(user, session);
+    public ResponseEntity<?> unfollowEvent(@PathVariable("user") String user, HttpServletRequest request){
+        return followService.unfollowEvent(user, request);
     }
 
 }

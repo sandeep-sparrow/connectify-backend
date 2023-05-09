@@ -4,9 +4,10 @@ import com.google.gson.Gson;
 import com.videopostingsystem.videopostingsystem.posts.PostRepository;
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.Users;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
 import com.videopostingsystem.videopostingsystem.users.notification.NotificationService;
 import com.videopostingsystem.videopostingsystem.users.notification.NotificationType;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import com.videopostingsystem.videopostingsystem.posts.Post;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,23 +22,20 @@ import java.util.List;
 @AllArgsConstructor
 public class CommentService {
 
-    PostRepository postRepository;
-    CommentRepository commentRepository;
-    UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
     @Autowired
-    NotificationService notificationService;
+    private final NotificationService notificationService;
+    private final JwtService jwtService;
 
-    public ResponseEntity<?> createComment(Long postID, String content, HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> createComment(Long postID, String content, HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
         if (postID == null || postRepository.findById(postID).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Post does not exist");
         }
         Post post = postRepository.findById(postID).get();
-        Users user = userRepository.findById(loggedInUser).get();
+        Users user = userRepository.findById(username).get();
         Users postOwner = post.getUsers();
         Comment comment = new Comment(post, user, content);
         commentRepository.save(comment);
@@ -45,12 +43,7 @@ public class CommentService {
         return ResponseEntity.ok("Created comment!");
     }
 
-    public ResponseEntity<?> getPostComments(Long postID, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> getPostComments(Long postID){
         if (postID == null || postRepository.findById(postID).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Post does not exist");
         }

@@ -9,7 +9,8 @@ import com.videopostingsystem.videopostingsystem.posts.interaction.PostInteracti
 import com.videopostingsystem.videopostingsystem.users.UserRepository;
 import com.videopostingsystem.videopostingsystem.users.UserType;
 import com.videopostingsystem.videopostingsystem.users.Users;
-import jakarta.servlet.http.HttpSession;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +27,13 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostInteractionRepository postInteractionRepository;
     private final CommentRepository commentRepository;
+    private final JwtService jwtService;
 
-    public ResponseEntity<?> createPost(PostCreateModel post, HttpSession session){
+    public ResponseEntity<?> createPost(PostCreateModel post, HttpServletRequest request){
         Gson gson = new Gson();
         PostStatus status;
         String json;
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null){
-            status = new PostStatus("invalid", "User not logged in.");
-            json = gson.toJson(status);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(json);
-        }
+        String username = jwtService.getUsername(request);
         if (post.title() == null || post.title().length() < 5 || post.title().length() > 50){
             status = new PostStatus("invalid", "Title must be longer than 5 characters and less than 50 characters");
             json = gson.toJson(status);
@@ -47,7 +44,7 @@ public class PostService {
             json = gson.toJson(status);
             return ResponseEntity.badRequest().body(json);
         }
-        Users user = userRepository.getReferenceById(loggedInUser);
+        Users user = userRepository.getReferenceById(username);
         Post newPost = new Post(user, post.title(), post.body());
         String category = OpenAPI.request("categorize this content in 1 of these 20 categories returning only the ONE WORD of the category. " +
                 "However, if you view the content as very offensive return the word 'Invalid'. Only return 'Invalid' on posts very offensive or racist. Do not categorize as 'Invalid' if it is just risque.:" +
@@ -87,12 +84,7 @@ public class PostService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> allPosts(HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-
+    public ResponseEntity<?> allPosts(){
         List<Post> posts = postRepository.findAll();
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
@@ -106,12 +98,8 @@ public class PostService {
         return ResponseEntity.ok(modelPosts);
         }
 
-    public ResponseEntity<?> getPost(Long id, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
+    public ResponseEntity<?> getPost(Long id){
 
-        if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
         if (postRepository.findById(id).isEmpty()) {
             return ResponseEntity.badRequest().body("Post ID not valid.");
         }
@@ -124,17 +112,15 @@ public class PostService {
                 post.getCategory()));
     }
 
-    public ResponseEntity<?> updatePost(Long id, PostCreateModel postCreateModel, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> updatePost(Long id, PostCreateModel postCreateModel, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+
         Optional<Post> post = postRepository.findById(id);
         if (post.isEmpty()){
             return ResponseEntity.badRequest().body("Post ID not valid.");
         }
         Post postObj = post.get();
-        if (!loggedInUser.equals(postObj.getUsers().getUsername())){
+        if (!username.equals(postObj.getUsers().getUsername())){
             return ResponseEntity.badRequest().body("You can only edit your own posts.");
         }
 
@@ -187,17 +173,14 @@ public class PostService {
         return ResponseEntity.ok(postObj);
     }
 
-    public ResponseEntity<?> deletePost(Long id, HttpSession session){
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> deletePost(Long id, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
         if (postRepository.findById(id).isEmpty()){
             return ResponseEntity.badRequest().body("Invalid post");
         }
         Post post = postRepository.findById(id).get();
-        Users user = userRepository.findById(loggedInUser).get();
-        if (!post.getUsers().getUsername().equals(loggedInUser) && !user.getType().equals(UserType.ADMIN)){
+        Users user = userRepository.findById(username).get();
+        if (!post.getUsers().getUsername().equals(username) && !user.getType().equals(UserType.ADMIN)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to delete this post");
         }
         List<PostInteractions> postInteractions = postInteractionRepository.findAllByPostID(id);
@@ -216,11 +199,7 @@ public class PostService {
         return ResponseEntity.ok("Successfully deleted post!");
     }
 
-    public ResponseEntity<?> getUserPosts(String user, HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
+    public ResponseEntity<?> getUserPosts(String user) {
         if (user == null || userRepository.findById(user).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid user");
         }
@@ -228,12 +207,9 @@ public class PostService {
         return postGetter(userObj);
     }
 
-    public ResponseEntity<?> myPosts(HttpSession session) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        if (loggedInUser == null || userRepository.findById(loggedInUser).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-        Users user = userRepository.findById(loggedInUser).get();
+    public ResponseEntity<?> myPosts(HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
         return postGetter(user);
     }
 

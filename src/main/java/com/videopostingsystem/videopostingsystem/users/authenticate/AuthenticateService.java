@@ -2,13 +2,16 @@ package com.videopostingsystem.videopostingsystem.users.authenticate;
 
 import com.videopostingsystem.videopostingsystem.mail.EmailSender;
 import com.videopostingsystem.videopostingsystem.users.*;
+import com.videopostingsystem.videopostingsystem.users.config.JwtService;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationToken;
 import com.videopostingsystem.videopostingsystem.users.token.ConfirmationTokenRepository;
-import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -25,45 +28,33 @@ public class AuthenticateService {
     private final UserRepository userRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailSender emailSender;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
-
-    public ResponseEntity<?> signup(AuthenticateModel signUp, HttpSession session){
-        session.setAttribute("loggedInUser", null);
-        if (signUp == null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
+    public ResponseEntity<?> signup(RegisterRequest request) {
+        if (request.getUsername() == null || request.getEmail() == null || request.getPassword() == null ){
+            return ResponseEntity.badRequest().body("Fields not provided");
         }
-        if (signUp.username() == null || signUp.password() == null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Must provide username and password");
-        }
-        if (userRepository.findById(signUp.username()).isPresent()) {
+        if (userRepository.findById(request.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
-        if (!isValidEmail(signUp.email())){
+        if (!isValidEmail(request.getEmail())){
             return ResponseEntity.badRequest().body("invalid email provided!");
         }
-        if (userRepository.findByEmail(signUp.email()).isPresent()){
+        if (userRepository.findByEmail(request.getEmail()).isPresent()){
             return ResponseEntity.badRequest().body("email is taken!");
         }
-        if (signUp.username().length() < 8 || signUp.password().length() < 8) {
+        if (request.getUsername().length() < 8 || request.getPassword().length() < 8) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credentials are not long enough");
         }
-        Users user;
-        String type = "user";
-
-        if (signUp.security_clearance() != null) {
-            if (signUp.security_clearance().equals(CONSTANTS.security_clearance)) {
-                user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.ADMIN);
-                user.setTopCategory("blank");
-                type = "admin";
-            } else {
-                user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.USER);
-                user.setTopCategory("blank");
-            }
-        } else {
-            user = new Users(signUp.username(), signUp.email(), signUp.password(), UserType.USER);
-            user.setTopCategory("blank");
-        }
-        userRepository.save(user); // save user to the database
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .type(UserType.USER)
+                .build();
+        userRepository.save(user);
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken= new ConfirmationToken(
                 token,
@@ -72,24 +63,21 @@ public class AuthenticateService {
                 user
         );
         String link  =  "http://localhost:8080/confirm?token="+token;
-        emailSender.sendEmail(signUp.email(), buildEmail(signUp.username(), link));
+        emailSender.sendEmail(request.getEmail(), buildEmail(request.getUsername(), link));
         confirmationTokenRepository.save(confirmationToken);
-        return ResponseEntity.ok().body("successfully created " + type + " account! Check email to activate account.");
+        return ResponseEntity.ok().body("successfully created user account! Check email to activate account.");
     }
 
-    public ResponseEntity<?> login(AuthenticateModel login, HttpSession session){
-        if (userRepository.findById(login.username()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Incorrect username");
-        }
-        Users user = userRepository.getReferenceById(login.username());
-        if (!login.password().equals(user.getPassword())) {
-            return ResponseEntity.badRequest().body("Incorrect password");
-        }
-        if (!userRepository.getReferenceById(login.username()).getEnabled()){
+    public ResponseEntity<?> login(AuthenticationRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        if (!userRepository.getReferenceById(request.getUsername()).getEnabled()){
             return ResponseEntity.badRequest().body("Account has not been activated!");
         }
-        session.setAttribute("loggedInUser", login.username());
-        return ResponseEntity.ok(session.getId());
+        Users user = userRepository.findById(request.getUsername()).orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
+        return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
     }
 
     public boolean isValidEmail(String email){
