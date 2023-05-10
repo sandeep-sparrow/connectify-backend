@@ -26,18 +26,25 @@ public class Users implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserType type;
     private String topCategory;
-    private String country = "Unknown";
-    private String bio = "I'm new here!";
-    private Boolean enabled = false;
-    private String cardColor = "white";
-    private String backgroundColor = "whitesmoke";
-    private String profilePic = "😀";
+    private String country;
+    private String bio;
+    private Boolean enabled;
+    private String cardColor;
+    private String backgroundColor;
+    private String profilePic;
 
     public Users(String username, String email, String password, UserType type) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.type = type;
+        this.country = "Unknown";
+        this.bio = "I'm new here!";
+        this.topCategory = "blank";
+        this.enabled = false;
+        this.cardColor = "white";
+        this.backgroundColor = "whitesmoke";
+        this.profilePic = "😀";
     }
 
     @Override

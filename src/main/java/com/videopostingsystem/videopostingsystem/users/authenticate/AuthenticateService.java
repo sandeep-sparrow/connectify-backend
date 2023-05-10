@@ -48,12 +48,7 @@ public class AuthenticateService {
         if (request.getUsername().length() < 8 || request.getPassword().length() < 8) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credentials are not long enough");
         }
-        Users user = Users.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .email(request.getEmail())
-                .type(UserType.USER)
-                .build();
+        Users user = new Users(request.getUsername(), request.getEmail(), passwordEncoder.encode(request.getPassword()), UserType.USER);
         userRepository.save(user);
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken= new ConfirmationToken(
