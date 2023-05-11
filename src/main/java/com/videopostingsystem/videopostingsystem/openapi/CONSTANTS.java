@@ -1,5 +1,5 @@
 package com.videopostingsystem.videopostingsystem.openapi;
 
 public class CONSTANTS {
-    public static String OPEN_API_KEY = "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";
+    public static String OPEN_API_KEY = "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";
 }

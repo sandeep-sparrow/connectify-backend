@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -82,5 +83,35 @@ public class FollowService {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("User unfollowed");
         }
         else return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not followed");
+    }
+
+    public ResponseEntity<?>friendsList(HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
+        List<Follow> usersFollowingList = followRepository.findAllByFollower(user);
+        List<Follow> usersFollowerList = followRepository.findAllByFollowing(user);
+        List<FriendResponseModel> mutualFollowList = new ArrayList<>();
+        for (Follow following : usersFollowingList) {
+            System.out.println(following.getFollower());
+            System.out.println(following.getFollowing());
+            for (Follow follower : usersFollowerList) {
+                System.out.println(follower.getFollower());
+                System.out.println(follower.getFollowing());
+                if (following.getFollowing().equals(follower.getFollower()) && following.getFollower().equals(follower.getFollowing())) {
+                    Users followerUser = following.getFollower();
+                    Users followingUser = following.getFollowing();
+                    if (!followerUser.getUsername().equals(username)){
+                        mutualFollowList.add(new FriendResponseModel(followerUser.getUsername(), followerUser.getProfilePic()));
+                    }
+                    else if (!followingUser.getUsername().equals(username)){
+                        mutualFollowList.add(new FriendResponseModel(followingUser.getUsername(), followingUser.getProfilePic()));
+                    }
+                    break;
+                }
+            }
+        }
+        Gson gson = new Gson();
+        return ResponseEntity.ok(gson.toJson(mutualFollowList));
+
     }
 }

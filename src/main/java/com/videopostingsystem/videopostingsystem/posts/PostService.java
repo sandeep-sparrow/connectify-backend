@@ -96,7 +96,7 @@ public class PostService {
                     post.getCategory()));
         }
         return ResponseEntity.ok(modelPosts);
-        }
+    }
 
     public ResponseEntity<?> getPost(Long id){
 

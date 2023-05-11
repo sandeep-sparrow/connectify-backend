@@ -16,5 +16,4 @@ public class UserProfileModel {
     private String backgroundColor;
     private String profilePic;
 
-
 }

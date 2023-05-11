@@ -36,4 +36,8 @@ public class FollowController {
         return followService.unfollowEvent(user, request);
     }
 
+    @GetMapping("/friends")
+    public ResponseEntity<?> friendsList(HttpServletRequest request){
+        return followService.friendsList(request);
+    }
 }

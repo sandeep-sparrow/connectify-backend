@@ -13,4 +13,5 @@ public interface ConfirmationTokenRepository extends JpaRepository<ConfirmationT
     Optional<ConfirmationToken> findByToken(String token);
     void deleteByToken(String token);
     List<ConfirmationToken> findAllByUsers(Users users);
-    }
+
+}

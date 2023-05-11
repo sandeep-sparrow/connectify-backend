@@ -70,6 +70,7 @@ public class AuthenticateService {
         if (!userRepository.getReferenceById(request.getUsername()).getEnabled()){
             return ResponseEntity.badRequest().body("Account has not been activated!");
         }
+
         Users user = userRepository.findById(request.getUsername()).orElseThrow();
         String jwtToken = jwtService.generateToken(user);
         return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
