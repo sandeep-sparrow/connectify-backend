@@ -17,19 +17,23 @@ public class GameInvite {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "inviter", nullable = false)
+    @JoinColumn(name = "inviter", nullable = false, unique = true)
     private Users inviter;
 
     @ManyToOne
-    @JoinColumn(name = "invited", nullable = false)
+    @JoinColumn(name = "invited", nullable = false, unique = true)
     private Users invited;
+
+    @Enumerated(EnumType.STRING)
+    private GameType game;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public GameInvite(Users inviter, Users invited){
+    public GameInvite(Users inviter, Users invited, GameType game){
         this.inviter = inviter;
         this.invited = invited;
+        this.game = game;
         this.status = Status.PENDING;
     }
 }
