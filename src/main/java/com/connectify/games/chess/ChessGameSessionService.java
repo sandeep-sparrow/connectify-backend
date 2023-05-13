@@ -70,37 +70,52 @@ public class ChessGameSessionService {
         return ResponseEntity.ok(gson.toJson(chessGameSessionResponseModel));
     }
 
+    public ResponseEntity<?> getChessSessionWithId(Long id) {
+        if (id == null || chessGameSessionRepository.findById(id).isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Game does not exist");
+        }
+
+        Gson gson = new Gson();
+        ChessGameSession chessGameSession = chessGameSessionRepository.findById(id).get();
+        ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove());
+        return ResponseEntity.ok(gson.toJson(chessGameSessionResponseModel));
+    }
+
+
     public ResponseEntity<?> postMove(Long sessionId, MoveRequestModel move, HttpServletRequest request) {
+        System.out.println(sessionId);
+        System.out.println(move.piece());
+        System.out.println(move.startPosition());
+        System.out.println(move.endPosition());
         if (sessionId == null || chessGameSessionRepository.findById(sessionId).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("game with sessionId " + sessionId + "does not exist");
         }
         ChessGameSession chessGameSession = chessGameSessionRepository.findById(sessionId).get();
         String username = jwtService.getUsername(request);
         Users userObj = userRepository.findById(username).get();
-        if (chessGameSession.getBlackPlayer() != userObj && chessGameSession.getWhitePlayer() != userObj){
+        if (!chessGameSession.getBlackPlayer().getUsername().equals(userObj.getUsername()) && !chessGameSession.getWhitePlayer().getUsername().equals(userObj.getUsername())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not part of this game");
         }
         Turn userColor;
-        if (chessGameSession.getBlackPlayer() == userObj){
+        if (chessGameSession.getBlackPlayer().getUsername().equals(userObj.getUsername())){
             userColor = Turn.BLACK;
         }
         else {
             userColor = Turn.WHITE;
         }
-        if (chessGameSession.getTurn() != userColor){
+        if (!chessGameSession.getTurn().equals(userColor)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("It is not your turn");
         }
 
-        Piece nextPiece;
-        try {
-            nextPiece = Piece.valueOf(move.piece().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid piece type");
-        }
-
+        Piece nextPiece = Piece.valueOf(move.piece().toUpperCase());
 
         Move nextMove = new Move(nextPiece, move.startPosition(), move.endPosition());
-
+        if (userColor.equals(Turn.WHITE)){
+            chessGameSession.setTurn(Turn.BLACK);
+        }
+        else {
+            chessGameSession.setTurn(Turn.WHITE);
+        }
         chessGameSession.updateMove(nextMove);
         chessGameSessionRepository.save(chessGameSession);
 

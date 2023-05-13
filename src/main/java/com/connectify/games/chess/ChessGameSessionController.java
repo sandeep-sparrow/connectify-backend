@@ -23,8 +23,13 @@ public class ChessGameSessionController {
         return chessGameSessionService.getChessSession(opponent, request);
     }
 
-    @PostMapping("/post-move/{sessionId}")
-    public ResponseEntity<?> postMove(@PathVariable Long sessionId, @RequestBody MoveRequestModel move, HttpServletRequest request) {
+    @GetMapping("/session/{sessionId}")
+    public ResponseEntity<?> getChessSessionWithId(@PathVariable("sessionId") Long id){
+        return chessGameSessionService.getChessSessionWithId(id);
+    }
+
+    @PutMapping("/post-move/{sessionId}")
+    public ResponseEntity<?> postMove(@PathVariable("sessionId") Long sessionId, @RequestBody MoveRequestModel move, HttpServletRequest request) {
         return chessGameSessionService.postMove(sessionId, move, request);
     }
 
