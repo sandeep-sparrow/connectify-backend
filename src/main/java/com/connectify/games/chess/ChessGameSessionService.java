@@ -83,10 +83,7 @@ public class ChessGameSessionService {
 
 
     public ResponseEntity<?> postMove(Long sessionId, MoveRequestModel move, HttpServletRequest request) {
-        System.out.println(sessionId);
-        System.out.println(move.piece());
-        System.out.println(move.startPosition());
-        System.out.println(move.endPosition());
+
         if (sessionId == null || chessGameSessionRepository.findById(sessionId).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("game with sessionId " + sessionId + "does not exist");
         }
@@ -126,5 +123,23 @@ public class ChessGameSessionService {
     public ResponseEntity<?> deleteSession(Long sessionId, HttpServletRequest request) {
         String username = jwtService.getUsername(request);
         return null;
+    }
+
+    public ResponseEntity<?> updateGameStatus(Long id, String gameStatus, HttpServletRequest request) {
+        if (id == null || chessGameSessionRepository.findById(id).isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("game with id " + id + "does not exist");
+        }
+        ChessGameSession chessGameSession = chessGameSessionRepository.findById(id).get();
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
+        if (!chessGameSession.getBlackPlayer().getUsername().equals(userObj.getUsername()) && !chessGameSession.getWhitePlayer().getUsername().equals(userObj.getUsername())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not part of this game");
+        }
+
+        chessGameSession.setGameStatus(GameStatus.valueOf(gameStatus));
+
+        chessGameSessionRepository.save(chessGameSession);
+
+        return ResponseEntity.ok(gameStatus);
     }
 }

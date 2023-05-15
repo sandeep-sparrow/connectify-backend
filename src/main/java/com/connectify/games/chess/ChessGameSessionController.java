@@ -28,6 +28,11 @@ public class ChessGameSessionController {
         return chessGameSessionService.getChessSessionWithId(id);
     }
 
+    @PutMapping("/game-status/{sessionId}")
+    public ResponseEntity<?> updateGameStatus(@PathVariable("sessionId") Long id, @RequestBody String gameStatus, HttpServletRequest request){
+        return chessGameSessionService.updateGameStatus(id, gameStatus, request);
+    }
+
     @PutMapping("/post-move/{sessionId}")
     public ResponseEntity<?> postMove(@PathVariable("sessionId") Long sessionId, @RequestBody MoveRequestModel move, HttpServletRequest request) {
         return chessGameSessionService.postMove(sessionId, move, request);
