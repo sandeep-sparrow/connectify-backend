@@ -10,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -66,7 +64,8 @@ public class ChessGameSessionService {
         else {
             chessGameSession = chessGameSessionRepository.findByBlackPlayerAndWhitePlayer(opponentObj, userObj).get();
         }
-        ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove());
+
+        ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove(), chessGameSession.getUpdatedAt());
         return ResponseEntity.ok(gson.toJson(chessGameSessionResponseModel));
     }
 
@@ -77,7 +76,7 @@ public class ChessGameSessionService {
 
         Gson gson = new Gson();
         ChessGameSession chessGameSession = chessGameSessionRepository.findById(id).get();
-        ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove());
+        ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove(), chessGameSession.getUpdatedAt());
         return ResponseEntity.ok(gson.toJson(chessGameSessionResponseModel));
     }
 
@@ -121,8 +120,18 @@ public class ChessGameSessionService {
 
 
     public ResponseEntity<?> deleteSession(Long sessionId, HttpServletRequest request) {
+        if (sessionId == null || chessGameSessionRepository.findById(sessionId).isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("game with sessionId " + sessionId + "does not exist");
+        }
+        ChessGameSession chessGameSession = chessGameSessionRepository.findById(sessionId).get();
         String username = jwtService.getUsername(request);
-        return null;
+        Users userObj = userRepository.findById(username).get();
+        if (!chessGameSession.getBlackPlayer().getUsername().equals(userObj.getUsername()) && !chessGameSession.getWhitePlayer().getUsername().equals(userObj.getUsername())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not part of this game");
+        }
+
+        chessGameSessionRepository.deleteById(sessionId);
+        return ResponseEntity.ok("chess game has been concluded.");
     }
 
     public ResponseEntity<?> updateGameStatus(Long id, String gameStatus, HttpServletRequest request) {
@@ -141,5 +150,31 @@ public class ChessGameSessionService {
         chessGameSessionRepository.save(chessGameSession);
 
         return ResponseEntity.ok(gameStatus);
+    }
+
+    public ResponseEntity<?> postHearBeat(Long sessionId, HttpServletRequest request) {
+        if (sessionId == null || chessGameSessionRepository.findById(sessionId).isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("game with sessionId " + sessionId + "does not exist");
+        }
+        ChessGameSession chessGameSession = chessGameSessionRepository.findById(sessionId).get();
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
+        if (!chessGameSession.getBlackPlayer().getUsername().equals(userObj.getUsername()) && !chessGameSession.getWhitePlayer().getUsername().equals(userObj.getUsername())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not part of this game");
+        }
+
+        chessGameSession.setHeartbeat(new Date());
+        chessGameSessionRepository.save(chessGameSession);
+        return ResponseEntity.ok("heart beat");
+    }
+
+    public void cleanUpInactiveSessions() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -2);
+        Date cutoff = cal.getTime();
+        List<ChessGameSession> inactiveSessions = chessGameSessionRepository.findByHeartbeatBefore(cutoff);
+        for (ChessGameSession session : inactiveSessions){
+            chessGameSessionRepository.deleteById(session.getId());
+        }
     }
 }

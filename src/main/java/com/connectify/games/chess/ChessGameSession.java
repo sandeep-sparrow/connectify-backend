@@ -5,8 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "chess_game_session")
@@ -22,11 +21,11 @@ public class ChessGameSession {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "white_player", nullable = false)
+    @JoinColumn(name = "white_player", nullable = false, unique = true)
     private Users whitePlayer;
 
     @ManyToOne
-    @JoinColumn(name = "black_player", nullable = false)
+    @JoinColumn(name = "black_player", nullable = false, unique = true)
     private Users blackPlayer;
 
     @Enumerated(EnumType.STRING)
@@ -39,10 +38,12 @@ public class ChessGameSession {
     private Move recentMove;
 
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Date createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Date updatedAt;
+
+    private Date heartbeat;
 
     public ChessGameSession(Users whitePlayer, Users blackPlayer){
         this.whitePlayer = whitePlayer;
@@ -50,6 +51,7 @@ public class ChessGameSession {
         gameStatus = GameStatus.IN_PROGRESS;
         recentMove = new Move();
         turn = Turn.WHITE;
+        heartbeat = new Date();
     }
 
     public void updateMove(Move recentMove){

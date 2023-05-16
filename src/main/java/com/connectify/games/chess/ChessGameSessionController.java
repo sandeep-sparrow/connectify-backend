@@ -2,6 +2,7 @@ package com.connectify.games.chess;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChessGameSessionController {
     ChessGameSessionService chessGameSessionService;
 
-    public ChessGameSessionController(ChessGameSessionService chessGameSessionService){
+    public ChessGameSessionController(ChessGameSessionService chessGameSessionService) {
         this.chessGameSessionService = chessGameSessionService;
     }
 
@@ -19,17 +20,17 @@ public class ChessGameSessionController {
     }
 
     @PostMapping("/session")
-    public ResponseEntity<?> getChessSession(@RequestBody String opponent, HttpServletRequest request){
+    public ResponseEntity<?> getChessSession(@RequestBody String opponent, HttpServletRequest request) {
         return chessGameSessionService.getChessSession(opponent, request);
     }
 
     @GetMapping("/session/{sessionId}")
-    public ResponseEntity<?> getChessSessionWithId(@PathVariable("sessionId") Long id){
+    public ResponseEntity<?> getChessSessionWithId(@PathVariable("sessionId") Long id) {
         return chessGameSessionService.getChessSessionWithId(id);
     }
 
     @PutMapping("/game-status/{sessionId}")
-    public ResponseEntity<?> updateGameStatus(@PathVariable("sessionId") Long id, @RequestBody String gameStatus, HttpServletRequest request){
+    public ResponseEntity<?> updateGameStatus(@PathVariable("sessionId") Long id, @RequestBody String gameStatus, HttpServletRequest request) {
         return chessGameSessionService.updateGameStatus(id, gameStatus, request);
     }
 
@@ -39,8 +40,18 @@ public class ChessGameSessionController {
     }
 
     @DeleteMapping("/delete-session/{sessionId}")
-    public ResponseEntity<?> deleteSession(@PathVariable Long sessionId, HttpServletRequest request) {
+    public ResponseEntity<?> deleteSession(@PathVariable("sessionId") Long sessionId, HttpServletRequest request) {
         return chessGameSessionService.deleteSession(sessionId, request);
+    }
+
+    @PostMapping("/heart-beat/{sessionId}")
+    public ResponseEntity<?> postHeartBeat(@PathVariable("sessionId") Long sessionId, HttpServletRequest request) {
+        return chessGameSessionService.postHearBeat(sessionId, request);
+    }
+
+    @Scheduled(fixedRate = 12000)
+    public void cleanUpInactiveSessions() {
+        chessGameSessionService.cleanUpInactiveSessions();
     }
 
 }
