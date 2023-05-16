@@ -2,6 +2,7 @@ package com.connectify.games.gameinvite;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,6 +27,11 @@ public class GameInviteController {
     @DeleteMapping("delete-invite")
     public ResponseEntity<?> deleteGameInvite(@RequestBody String inviter, HttpServletRequest request){
         return gameInviteService.deleteGameInvite(inviter, request);
+    }
+
+    @Scheduled(fixedRate = 15000)
+    public void cleanUpOldInvites() {
+        gameInviteService.cleanUpOldInvites();
     }
 
 }

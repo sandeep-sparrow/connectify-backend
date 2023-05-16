@@ -113,6 +113,7 @@ public class ChessGameSessionService {
             chessGameSession.setTurn(Turn.WHITE);
         }
         chessGameSession.updateMove(nextMove);
+        chessGameSession.setUpdatedAt(new Date());
         chessGameSessionRepository.save(chessGameSession);
 
         return ResponseEntity.ok("Move was successful");
@@ -146,7 +147,7 @@ public class ChessGameSessionService {
         }
 
         chessGameSession.setGameStatus(GameStatus.valueOf(gameStatus));
-
+        chessGameSession.setUpdatedAt(new Date());
         chessGameSessionRepository.save(chessGameSession);
 
         return ResponseEntity.ok(gameStatus);

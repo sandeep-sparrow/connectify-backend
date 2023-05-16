@@ -4,7 +4,6 @@ import com.connectify.users.Users;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 
 @Entity
@@ -40,7 +39,6 @@ public class ChessGameSession {
     @CreationTimestamp
     private Date createdAt;
 
-    @UpdateTimestamp
     private Date updatedAt;
 
     private Date heartbeat;
@@ -52,6 +50,7 @@ public class ChessGameSession {
         recentMove = new Move();
         turn = Turn.WHITE;
         heartbeat = new Date();
+        updatedAt = new Date();
     }
 
     public void updateMove(Move recentMove){

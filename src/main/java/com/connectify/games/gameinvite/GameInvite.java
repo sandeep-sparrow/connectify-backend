@@ -3,6 +3,9 @@ package com.connectify.games.gameinvite;
 import com.connectify.users.Users;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
 
 @Entity
 @NoArgsConstructor
@@ -29,6 +32,9 @@ public class GameInvite {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @CreationTimestamp
+    private Date createdAt;
 
     public GameInvite(Users inviter, Users invited, GameType game){
         this.inviter = inviter;

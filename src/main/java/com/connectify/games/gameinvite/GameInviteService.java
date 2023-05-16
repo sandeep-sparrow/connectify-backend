@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -62,5 +64,15 @@ public class GameInviteService {
         }
         gameInviteRepository.deleteById(gameInviteRepository.findByInviterAndInvited(userInviterObj, user).get().getId());
         return ResponseEntity.badRequest().body("deleted");
+    }
+
+    public void cleanUpOldInvites() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.SECOND, -15);
+        Date cutoff = cal.getTime();
+        List<GameInvite> oldInvites = gameInviteRepository.findByCreatedAtBefore(cutoff);
+        for (GameInvite invite : oldInvites){
+            gameInviteRepository.deleteById(invite.getId());
+        }
     }
 }
