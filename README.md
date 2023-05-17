@@ -1,27 +1,42 @@
-# Social Media API
-The Social Media API is a mock social media API built using the Spring framework in Java. It allows users to create, update, and delete posts.
+# Connectify Social Media and Gaming Platform
 
-The posts are also run through OpenAI's API to categorize each post into one of 20 categories. In the near future, search implementation and recommended posts based on past consumed content will be added. It also includes a message inbox system between 2 users.
+Connectify is a diverse social media and gaming platform developed using the Spring Framework in Java. The platform encompasses a variety of features such as advanced profile management, an innovative post creation and moderation system, real-time gaming, and a robust following system.
+
+## 📣 Connectify is live on [connectifyapp.web.app](https://connectifyapp.web.app) 📣
+
+## Key Features
+
+- **Advanced Profile Management**: Users can customize their profiles with rich options to express their individuality within the Connectify community.
+
+- **Innovative Post Creation and Moderation**: Users can create, update, and delete posts. Each post undergoes a moderation process using OpenAI API to ensure the maintenance of community standards and provide an enriching user experience.
+
+- **Private Messaging System**: Connectify features a secure messaging system for direct communications between users, fostering a connected community.
+
+- **Real-time Online Gaming**: An immersive online gaming feature that currently includes chess. The games are designed to support real-time multiplayer sessions, providing an exciting and interactive user experience. We are actively developing this feature to include more games in the future.
+
+- **Robust Following System**: Users can follow each other to keep updated with the latest posts and activities, promoting a dynamic and engaging social environment.
 
 ## Technologies Used
-The Social Media API is built using the following technologies:
 
-Java
+Connectify is crafted using:
 
-Spring Framework
+- Java
+- Spring Framework
+- PostgreSQL
+- Docker
+- Spring Security with JWT tokens for stateless session management
+- OpenAI's API
 
-PostgreSQL
-
-Docker
-
-The database is stored in a Docker container, which is built using the PostgreSQL image. This allows for easy setup and deployment of the API.
-
-## The API also utilizes the following external APIs:
-
-OpenAI's API for post categorization
-
+Our database is hosted in a PostgreSQL Docker container, ensuring easy setup and seamless deployment of the platform.
 
 ## Getting Started
-To get started with the Social Media API, clone the repository to your local machine and run it using a Java IDE such as Eclipse or IntelliJ. You will also need to have Docker installed on your machine to run the PostgreSQL container.
+
+To get a hands-on experience of Connectify, clone the repository to your local machine and run it using a Java IDE such as Eclipse or IntelliJ. Ensure you have Docker installed on your machine to run the PostgreSQL container.
 
 Note: The endpoints for the API are subject to change and may not be fully documented in this README file.
+
+## Future Developments
+
+We are ceaselessly working to enhance and expand Connectify. Future updates will include a broader range of games and improved user interactions. Stay tuned for more!
+
+We welcome your feedback and contributions to Connectify. Feel free to submit issues and pull requests.
