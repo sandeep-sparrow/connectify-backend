@@ -43,8 +43,8 @@ public class Users implements UserDetails {
         this.bio = "I'm new here!";
         this.topCategory = "blank";
         this.enabled = false;
-        this.cardColor = "white";
-        this.backgroundColor = "whitesmoke";
+        this.cardColor = "#1C1C1C";
+        this.backgroundColor = "#263238";
         this.profilePic = "😀";
         this.theme = "dark";
     }
