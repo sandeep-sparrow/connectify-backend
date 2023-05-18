@@ -20,7 +20,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -191,6 +190,19 @@ public class UserService {
         Gson gson = new Gson();
         String json = gson.toJson(userProfileList);
         return ResponseEntity.ok(json);
+    }
+
+    public ResponseEntity<?> updateTheme(String theme, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        if (userRepository.findById(username).isEmpty()) {
+            return ResponseEntity.badRequest().body("user does not exist");
+        }
+        System.out.println(theme);
+        Users user = userRepository.findById(username).get();
+        user.setTheme(theme);
+
+        userRepository.save(user);
+        return ResponseEntity.ok("updated theme");
     }
 
 

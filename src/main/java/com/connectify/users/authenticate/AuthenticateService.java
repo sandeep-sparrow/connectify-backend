@@ -75,7 +75,8 @@ public class AuthenticateService {
 
         Users user = userRepository.findById(request.getUsername()).orElseThrow();
         String jwtToken = jwtService.generateToken(user);
-        return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, user.getTheme());
+        return ResponseEntity.ok(authenticationResponse);
     }
 
     public boolean isValidEmail(String email){

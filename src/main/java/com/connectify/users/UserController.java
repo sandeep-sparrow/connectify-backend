@@ -47,4 +47,9 @@ public class UserController {
     public ResponseEntity<?> getUsers(){
         return userService.getUsers();
     }
+
+    @PutMapping("/update-theme")
+    public ResponseEntity<?> updateTheme(@RequestBody String theme, HttpServletRequest request){
+        return userService.updateTheme(theme, request);
+    }
 }

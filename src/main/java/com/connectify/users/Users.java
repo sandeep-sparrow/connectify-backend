@@ -31,6 +31,7 @@ public class Users implements UserDetails {
     private Boolean enabled;
     private String cardColor;
     private String backgroundColor;
+    private String theme;
     private String profilePic;
 
     public Users(String username, String email, String password, UserType type) {
@@ -45,6 +46,7 @@ public class Users implements UserDetails {
         this.cardColor = "white";
         this.backgroundColor = "whitesmoke";
         this.profilePic = "😀";
+        this.theme = "dark";
     }
 
     @Override
