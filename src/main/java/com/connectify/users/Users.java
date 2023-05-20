@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -33,6 +34,8 @@ public class Users implements UserDetails {
     private String backgroundColor;
     private String theme;
     private String profilePic;
+    private boolean online;
+    private Date lastHeartbeat;
 
     public Users(String username, String email, String password, UserType type) {
         this.username = username;
@@ -47,6 +50,8 @@ public class Users implements UserDetails {
         this.backgroundColor = "#263238";
         this.profilePic = "😀";
         this.theme = "dark";
+        this.online = false;
+        this.lastHeartbeat = new Date();
     }
 
     @Override

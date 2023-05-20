@@ -21,7 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -175,7 +177,7 @@ public class UserService {
         }
         Gson gson = new Gson();
         Users userDetails = userRepository.findById(user).get();
-        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor(), userDetails.getProfilePic());
+        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor(), userDetails.getProfilePic(), String.valueOf(userDetails.isOnline()));
         String json = gson.toJson(userProfileModel);
         System.out.println(json);
         return ResponseEntity.ok(json);
@@ -185,7 +187,7 @@ public class UserService {
         List<Users> users = userRepository.findAll();
         List<UserProfileModel> userProfileList = new ArrayList<>();
         for (Users user : users){
-            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor(), user.getProfilePic()));
+            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor(), user.getProfilePic(), String.valueOf(user.isOnline())));
         }
         Gson gson = new Gson();
         String json = gson.toJson(userProfileList);
@@ -206,4 +208,41 @@ public class UserService {
     }
 
 
+    public ResponseEntity<?> onlineHeartBeat(HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
+        Optional<Users> optionalUser = userRepository.findById(username);
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.badRequest().body("User does not exist");
+        }
+
+        Users user = optionalUser.get();
+
+        if (!user.isOnline()){
+            user.setOnline(true);
+        }
+
+        user.setLastHeartbeat(new Date());
+        userRepository.save(user);
+
+        return ResponseEntity.ok("heartbeat");
+    }
+
+    public void cleanUpOnlineList() {
+
+        List<Users> onlineUsers = userRepository.findAllByOnline(true);
+
+        for (Users onlineUser : onlineUsers){
+
+            Date lastHeartbeat = onlineUser.getLastHeartbeat();
+            Date currentTime = new Date();
+            long durationInMillis = currentTime.getTime() - lastHeartbeat.getTime();
+            long minutes = durationInMillis / (60 * 1000);
+
+            if (minutes > 3){
+                onlineUser.setOnline(false);
+                userRepository.save(onlineUser);
+            }
+        }
+    }
 }

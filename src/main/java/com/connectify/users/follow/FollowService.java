@@ -101,17 +101,19 @@ public class FollowService {
                     Users followerUser = following.getFollower();
                     Users followingUser = following.getFollowing();
                     if (!followerUser.getUsername().equals(username)){
-                        mutualFollowList.add(new FriendResponseModel(followerUser.getUsername(), followerUser.getProfilePic()));
+                        System.out.println(followerUser.getUsername() + " "  + followerUser.isOnline());
+                        mutualFollowList.add(new FriendResponseModel(followerUser.getUsername(), followerUser.getProfilePic(), String.valueOf(followerUser.isOnline())));
                     }
                     else if (!followingUser.getUsername().equals(username)){
-                        mutualFollowList.add(new FriendResponseModel(followingUser.getUsername(), followingUser.getProfilePic()));
+                        System.out.println(followingUser.getUsername() + " "  + followingUser.isOnline());
+                        mutualFollowList.add(new FriendResponseModel(followingUser.getUsername(), followingUser.getProfilePic(), String.valueOf(followingUser.isOnline())));
                     }
                     break;
                 }
             }
         }
         Gson gson = new Gson();
+        System.out.println(gson.toJson(mutualFollowList));
         return ResponseEntity.ok(gson.toJson(mutualFollowList));
-
     }
 }

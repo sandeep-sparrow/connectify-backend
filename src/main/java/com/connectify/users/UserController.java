@@ -2,6 +2,7 @@ package com.connectify.users;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,5 +52,15 @@ public class UserController {
     @PutMapping("/update-theme")
     public ResponseEntity<?> updateTheme(@RequestBody String theme, HttpServletRequest request){
         return userService.updateTheme(theme, request);
+    }
+
+    @PostMapping("/online")
+    public ResponseEntity<?> onlineHeartBeat(HttpServletRequest request){
+        return userService.onlineHeartBeat(request);
+    }
+
+    @Scheduled(fixedRate = 180000)
+    public void cleanUpOldInvites() {
+        userService.cleanUpOnlineList();
     }
 }

@@ -15,5 +15,6 @@ public class UserProfileModel {
     private String cardColor;
     private String backgroundColor;
     private String profilePic;
+    private String online;
 
 }
