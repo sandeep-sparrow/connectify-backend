@@ -75,7 +75,7 @@ public class AuthenticateService {
 
         Users user = userRepository.findById(request.getUsername()).orElseThrow();
         String jwtToken = jwtService.generateToken(user);
-        AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, user.getTheme());
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, user.getTheme(), user.getProfilePic());
         return ResponseEntity.ok(authenticationResponse);
     }
 
