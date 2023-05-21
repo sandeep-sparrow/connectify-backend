@@ -88,10 +88,12 @@ public class PostService {
         List<Post> posts = postRepository.findAll();
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
+            List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());
+            List<PostInteractions> bookmarkedList = postInteractionRepository.findAllBookmarkedByPostID(post.getId());
             modelPosts.add(new PostResponseModel(post.getId(),
                     post.getUsers().getUsername(),
                     post.getTitle(), post.getBody(),
-                    post.getLikes(), post.getBookmarks(),
+                    (long) likedList.size(), (long) bookmarkedList.size(),
                     post.getLastModifiedDate(),
                     post.getCategory()));
         }
@@ -104,10 +106,12 @@ public class PostService {
             return ResponseEntity.badRequest().body("Post ID not valid.");
         }
         Post post = postRepository.findById(id).get();
+        List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());
+        List<PostInteractions> bookmarkedList = postInteractionRepository.findAllBookmarkedByPostID(post.getId());
         return ResponseEntity.ok(new PostResponseModel(post.getId(),
                 post.getUsers().getUsername(),
                 post.getTitle(), post.getBody(),
-                post.getLikes(), post.getBookmarks(),
+                (long) likedList.size(), (long) bookmarkedList.size(),
                 post.getLastModifiedDate(),
                 post.getCategory()));
     }
@@ -221,10 +225,12 @@ public class PostService {
         List<Post> posts = postRepository.findAllByUsers(user);
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
+            List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());
+            List<PostInteractions> bookmarkedList = postInteractionRepository.findAllBookmarkedByPostID(post.getId());
             modelPosts.add(new PostResponseModel(post.getId(),
                     post.getUsers().getUsername(),
                     post.getTitle(), post.getBody(),
-                    post.getLikes(), post.getBookmarks(),
+                    (long) likedList.size(), (long) bookmarkedList.size(),
                     post.getLastModifiedDate(),
                     post.getCategory()));
         }

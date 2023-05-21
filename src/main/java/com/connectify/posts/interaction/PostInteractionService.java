@@ -45,12 +45,7 @@ public class PostInteractionService {
             else {
                 if (postInteractionRepository.findById(postId + "_" + username).get().isLiked()){
                     notificationService.removeNotification(user, post.getUsers(), NotificationType.LIKE, postId);
-                    post.setLikes(post.getLikes()-1);
                 }
-                if (postInteractionRepository.findById(postId + "_" + username).get().isBookmark()){
-                    post.setBookmarks(post.getBookmarks()-1);
-                }
-                postRepository.save(post);
                 postInteractionRepository.deleteById(postId + "_" + username);
                 return ResponseEntity.ok().body("removed post " + postId + " from users interactions");
             }
@@ -58,13 +53,7 @@ public class PostInteractionService {
         if (postInteractionRepository.findById(postId + "_" + username).isEmpty()){
             if (postInteraction.liked()){
                 notificationService.setNotification(user, post.getUsers(), NotificationType.LIKE, postId);
-                post.setLikes(post.getLikes()+1);
             }
-            if (postInteraction.bookmark()){
-                post.setBookmarks(post.getBookmarks()+1);
-            }
-            System.out.println(postInteraction.bookmark());
-            System.out.println(postInteraction.liked());
         }
 
         newPostInteraction = new PostInteractions(postId, user, postInteraction.liked(), postInteraction.bookmark());

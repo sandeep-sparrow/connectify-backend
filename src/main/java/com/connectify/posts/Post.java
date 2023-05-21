@@ -44,10 +44,6 @@ public class Post {
     )
     private String body;
 
-    private Long likes = 0L;
-
-    private Long bookmarks = 0L;
-
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "creation_date")

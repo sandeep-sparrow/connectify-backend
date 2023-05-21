@@ -42,17 +42,6 @@ public class UserService {
         String username = jwtService.getUsername(request);
         Users user = userRepository.findById(username).get();
 
-        List<PostInteractions> postInteractions = postInteractionRepository.findAllByUsers(user);
-        for (PostInteractions postInteraction : postInteractions){
-            Post post = postRepository.findById(postInteraction.getPostID()).get();
-            if (postInteraction.isLiked()){
-                post.setLikes(post.getLikes()-1);
-            }
-            if (postInteraction.isBookmark()){
-                post.setBookmarks(post.getBookmarks()-1);
-            }
-            postRepository.save(post);
-        }
         postInteractionRepository.deleteAllByUsers(user);
 
         List<Post> posts = postRepository.findAllByUsers(user);

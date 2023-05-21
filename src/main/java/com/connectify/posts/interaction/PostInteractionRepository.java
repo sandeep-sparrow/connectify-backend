@@ -17,4 +17,6 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
 
     @Query("SELECT p FROM PostInteractions p WHERE p.postID = :postID AND p.liked = true")
     List<PostInteractions> findAllLikedByPostID(@Param("postID") Long postID);
+    @Query("SELECT p FROM PostInteractions p WHERE p.postID = :postID AND p.bookmark = true")
+    List<PostInteractions> findAllBookmarkedByPostID(@Param("postID") Long postID);
 }
