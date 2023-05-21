@@ -66,7 +66,6 @@ public class PostService {
                 "Literature\n" +
                 "Business\n" +
                 "Entertainment\n" +
-                "Social issues\n" +
                 "History" +
                 "Miscellaneous" +
                 "Here is the content:" +
@@ -155,9 +154,28 @@ public class PostService {
                 "Literature\n" +
                 "Business\n" +
                 "Entertainment\n" +
-                "Social issues\n" +
-                "History" +
-                "Miscellaneous" +
+                "History\n" +
+                "Animals\n" +
+                "Miscellaneous\n" +
+                "Cars\n" +
+                "Philosophy\n" +
+                "Photography\n" +
+                "Movies\n" +
+                "Home and Garden\n" +
+                "Career\n" +
+                "Relationships\n" +
+                "Society\n" +
+                "Parenting\n" +
+                "Space\n" +
+                "DIY\n" +
+                "Cooking\n" +
+                "Adventure\n" +
+                "Spirituality\n" +
+                "Fitness\n" +
+                "Real Estate\n" +
+                "Psychology\n" +
+                "Personal Finance\n" +
+                "Hobbies\n" +
                 "Here is the content:" +
                 postCreateModel.title() + postCreateModel.body());
         category = category.toLowerCase();
