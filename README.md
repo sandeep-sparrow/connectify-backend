@@ -4,8 +4,9 @@ Connectify is a social media and gaming platform developed using the Spring Fram
 
 ## 📣 Connectify is live on [connectifyapp.web.app](https://connectifyapp.web.app) 📣
 
-![lightconnectify](https://github.com/noahgsolomon/connectify-backend/assets/111200060/48456044-667e-4cad-99be-35242f611c1f)
-![image](https://github.com/noahgsolomon/connectify-backend/assets/111200060/32243871-fa77-4780-bc32-4569c764699d)
+![image](https://github.com/noahgsolomon/connectify-frontend/assets/111200060/cf84ae2e-5457-4047-96de-aefab74dce29)
+![image](https://github.com/noahgsolomon/connectify-frontend/assets/111200060/fadf3b7d-4204-499a-a322-8e23665c0bef)
+![image](https://github.com/noahgsolomon/connectify-frontend/assets/111200060/8a41591a-47e5-42f0-9ba5-1a1cf097541e)
 
 ## Key Features
 
