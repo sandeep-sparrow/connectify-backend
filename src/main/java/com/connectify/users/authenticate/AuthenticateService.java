@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +57,7 @@ public class AuthenticateService {
         ConfirmationToken confirmationToken= new ConfirmationToken(
                 token,
                 LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
+                LocalDateTime.now().plusMinutes(120),
                 user
         );
         String link  =  "http://localhost:8080/confirm?token="+token;
@@ -109,6 +110,8 @@ public class AuthenticateService {
         return ResponseEntity.ok("Successfully activated account!");
     }
 
+
+
     @Transactional
     public ResponseEntity<?> resendToken(@RequestBody String email){
         if (email == null){
@@ -130,13 +133,23 @@ public class AuthenticateService {
         ConfirmationToken confirmationToken= new ConfirmationToken(
                 token,
                 LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
+                LocalDateTime.now().plusMinutes(120),
                 users
         );
         confirmationTokenRepository.save(confirmationToken);
         String link  =  "http://localhost:8080/confirm?token="+token;
         emailSender.sendEmail(email, buildEmail(users.getUsername(), link));
         return ResponseEntity.ok("Activation link resent! Check your email inbox to activate your account!");
+    }
+
+    @Transactional
+    public void deleteUnauthenticatedAccounts() {
+        List<ConfirmationToken> tokens = confirmationTokenRepository.findAllByExpiresAtBefore(LocalDateTime.now());
+        for (ConfirmationToken token : tokens){
+            Optional<Users> user = userRepository.findById(token.getUsers().getUsername());
+            confirmationTokenRepository.deleteByToken(token.getToken());
+            user.ifPresent(userRepository::delete);
+        }
     }
 
     private String buildEmail(String name, String link) {
@@ -207,5 +220,4 @@ public class AuthenticateService {
                 "\n" +
                 "</div></div>";
     }
-
 }

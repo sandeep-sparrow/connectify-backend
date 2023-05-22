@@ -1,6 +1,7 @@
 package com.connectify.users.authenticate;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,5 +32,10 @@ public class AuthenticateController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest login) {
         return authenticateService.login(login);
+    }
+
+    @Scheduled(fixedRate = (1000 * 60 * 30))
+    public void deleteUnauthenticatedAccounts() {
+        authenticateService.deleteUnauthenticatedAccounts();
     }
 }

@@ -12,6 +12,8 @@ import com.connectify.users.config.JwtService;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -66,8 +68,28 @@ public class PostService {
                 "Literature\n" +
                 "Business\n" +
                 "Entertainment\n" +
-                "History" +
-                "Miscellaneous" +
+                "History\n" +
+                "Animals\n" +
+                "Miscellaneous\n" +
+                "Cars\n" +
+                "Philosophy\n" +
+                "Photography\n" +
+                "Movies\n" +
+                "Home and Garden\n" +
+                "Career\n" +
+                "Relationships\n" +
+                "Society\n" +
+                "Parenting\n" +
+                "Space\n" +
+                "DIY\n" +
+                "Cooking\n" +
+                "Adventure\n" +
+                "Spirituality\n" +
+                "Fitness\n" +
+                "Real Estate\n" +
+                "Psychology\n" +
+                "Personal Finance\n" +
+                "Hobbies\n" +
                 "Here is the content:" +
                 post.title() + post.body());
         category = category.toLowerCase();
@@ -83,8 +105,9 @@ public class PostService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> allPosts(){
-        List<Post> posts = postRepository.findAll();
+    public ResponseEntity<?> getPosts(int page){
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "lastModifiedDate"));
+        List<Post> posts = postRepository.findAll(pageRequest).getContent();
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
             List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());
@@ -221,26 +244,23 @@ public class PostService {
         return ResponseEntity.ok("Successfully deleted post!");
     }
 
-    public ResponseEntity<?> getUserPosts(String user) {
+    public ResponseEntity<?> getUserPosts(String user, int page) {
         if (user == null || userRepository.findById(user).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid user");
         }
         Users userObj = userRepository.findById(user).get();
-        return postGetter(userObj);
+        return postGetter(userObj, page);
     }
 
-    public ResponseEntity<?> myPosts(HttpServletRequest request) {
+    public ResponseEntity<?> myPosts(int page, HttpServletRequest request) {
         String username = jwtService.getUsername(request);
         Users user = userRepository.findById(username).get();
-        return postGetter(user);
+        return postGetter(user, page);
     }
 
-    public ResponseEntity<?> postGetter(Users user){
-        if (postRepository.findAllByUsers(user) == null) {
-            return ResponseEntity.ok("");
-        }
-
-        List<Post> posts = postRepository.findAllByUsers(user);
+    public ResponseEntity<?> postGetter(Users user, int page){
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "lastModifiedDate"));
+        List<Post> posts = postRepository.findAllByUsersOrderByLastModifiedDateDesc(user, pageRequest).getContent();
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
             List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());

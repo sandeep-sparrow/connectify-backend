@@ -17,13 +17,13 @@ public class PostController {
 
 
     @GetMapping("/posts")
-    public ResponseEntity<?> allPosts() {
-        return postService.allPosts();
+    public ResponseEntity<?> getPosts(@RequestParam int page) {
+        return postService.getPosts(page);
     }
 
     @GetMapping("/posts/{user}")
-    public ResponseEntity<?> getUserPosts(@PathVariable("user") String user){
-        return postService.getUserPosts(user);
+    public ResponseEntity<?> getUserPosts(@PathVariable("user") String user, @RequestParam int page){
+        return postService.getUserPosts(user, page);
     }
 
     @GetMapping("/post/{id}")
@@ -32,8 +32,8 @@ public class PostController {
     }
 
     @GetMapping("/my-posts")
-    public ResponseEntity<?> myPosts(HttpServletRequest request){
-        return postService.myPosts(request);
+    public ResponseEntity<?> myPosts(@RequestParam int page, HttpServletRequest request){
+        return postService.myPosts(page, request);
     }
 
     @PutMapping("/post/{id}")
