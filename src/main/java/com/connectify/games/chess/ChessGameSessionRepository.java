@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface ChessGameSessionRepository extends JpaRepository<ChessGameSession, Long> {
     Optional<ChessGameSession> findByBlackPlayerAndWhitePlayer(Users blackPlayer, Users whitePlayer);
 
+    List<ChessGameSession> findByBlackPlayerOrWhitePlayer(Users blackPlayer, Users whitePlayer);
     List<ChessGameSession> findByHeartbeatBefore(Date cutoff);
 }
 

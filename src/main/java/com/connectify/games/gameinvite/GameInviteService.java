@@ -60,7 +60,7 @@ public class GameInviteService {
         Users user = userRepository.findById(username).get();
         Users userInviterObj = userRepository.findById(inviter).get();
         if (gameInviteRepository.findByInviterAndInvited(userInviterObj, user).isEmpty()){
-            return ResponseEntity.badRequest().body("No invite");
+            return ResponseEntity.ok("No invite");
         }
         gameInviteRepository.deleteById(gameInviteRepository.findByInviterAndInvited(userInviterObj, user).get().getId());
         return ResponseEntity.badRequest().body("deleted");

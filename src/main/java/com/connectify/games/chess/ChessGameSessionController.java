@@ -44,6 +44,11 @@ public class ChessGameSessionController {
         return chessGameSessionService.deleteSession(sessionId, request);
     }
 
+    @DeleteMapping("/delete-user-sessions/{username}")
+    public ResponseEntity<?> deleteUserChessSessions(@PathVariable("username") String username, HttpServletRequest request) {
+        return chessGameSessionService.deleteUserChessSessions(username, request);
+    }
+
     @PostMapping("/heart-beat/{sessionId}")
     public ResponseEntity<?> postHeartBeat(@PathVariable("sessionId") Long sessionId, HttpServletRequest request) {
         return chessGameSessionService.postHearBeat(sessionId, request);

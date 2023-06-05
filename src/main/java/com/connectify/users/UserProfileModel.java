@@ -16,5 +16,8 @@ public class UserProfileModel {
     private String backgroundColor;
     private String profilePic;
     private String online;
+    private int followers;
+    private int following;
+    private boolean follows;
 
 }

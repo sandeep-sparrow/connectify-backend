@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findAllByUsers(Users users);
+    List<Notification> findAllBySender(Users sender);
+    List<Notification> findAllByUsersOrderByTimeDesc(Users users);
     List<Notification> findByTypeAndRelatedObjectIdAndSenderAndUsers(NotificationType type, Long relatedObjectId, Users sender, Users users);
 }

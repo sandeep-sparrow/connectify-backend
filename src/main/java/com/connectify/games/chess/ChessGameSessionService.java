@@ -53,7 +53,7 @@ public class ChessGameSessionService {
         Users userObj = userRepository.findById(username).get();
         Users opponentObj = userRepository.findById(opponent).get();
         if (chessGameSessionRepository.findByBlackPlayerAndWhitePlayer(userObj, opponentObj).isEmpty() && chessGameSessionRepository.findByBlackPlayerAndWhitePlayer(opponentObj, userObj).isEmpty()){
-            return ResponseEntity.ok("No game open between users yet");
+            return ResponseEntity.badRequest().body("No game open between users yet");
         }
 
         Gson gson = new Gson();
@@ -66,6 +66,7 @@ public class ChessGameSessionService {
         }
 
         ChessGameSessionResponseModel chessGameSessionResponseModel = new ChessGameSessionResponseModel(chessGameSession.getId(), chessGameSession.getWhitePlayer().getUsername(), chessGameSession.getBlackPlayer().getUsername(), chessGameSession.getTurn().toString(), chessGameSession.getGameStatus().toString(), chessGameSession.getRecentMove(), chessGameSession.getUpdatedAt());
+        System.out.println(gson.toJson(chessGameSessionResponseModel));
         return ResponseEntity.ok(gson.toJson(chessGameSessionResponseModel));
     }
 
@@ -133,6 +134,18 @@ public class ChessGameSessionService {
 
         chessGameSessionRepository.deleteById(sessionId);
         return ResponseEntity.ok("chess game has been concluded.");
+    }
+
+    public ResponseEntity<?> deleteUserChessSessions(String user, HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users userObj = userRepository.findById(username).get();
+
+        List<ChessGameSession> chessGameSessions = chessGameSessionRepository.findByBlackPlayerOrWhitePlayer(userObj, userObj);
+        for (ChessGameSession chessGameSession : chessGameSessions){
+            chessGameSessionRepository.deleteById(chessGameSession.getId());
+        }
+
+        return ResponseEntity.ok("All chess games have been deleted");
     }
 
     public ResponseEntity<?> updateGameStatus(Long id, String gameStatus, HttpServletRequest request) {

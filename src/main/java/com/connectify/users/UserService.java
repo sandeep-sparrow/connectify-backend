@@ -10,8 +10,14 @@ import com.connectify.posts.comments.CommentRepository;
 import com.connectify.posts.interaction.PostInteractionRepository;
 import com.connectify.posts.interaction.PostInteractions;
 import com.connectify.users.config.JwtService;
+import com.connectify.users.follow.Follow;
+import com.connectify.users.follow.FollowRepository;
+import com.connectify.users.notification.Notification;
+import com.connectify.users.notification.NotificationRepository;
 import com.connectify.users.token.ConfirmationToken;
 import com.connectify.users.token.ConfirmationTokenRepository;
+import com.connectify.users.token.ValidateToken;
+import com.connectify.users.token.ValidateTokenRepository;
 import com.google.gson.Gson;
 import com.connectify.inbox.messagelog.MessageLog;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +26,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -35,6 +40,9 @@ public class UserService {
     private final MessageLogRepository messageLogRepository;
     private final InboxRepository inboxRepository;
     private final CommentRepository commentRepository;
+    private final FollowRepository followRepository;
+    private final ValidateTokenRepository validateTokenRepository;
+    private final NotificationRepository notificationRepository;
     private final JwtService jwtService;
 
     @Transactional
@@ -59,6 +67,27 @@ public class UserService {
         for (ConfirmationToken token : confirmationTokens){
             confirmationTokenRepository.deleteByToken(token.getToken());
         }
+
+        List<ValidateToken> validateTokens = validateTokenRepository.findAllByUsers(user);
+        for (ValidateToken token : validateTokens){
+            validateTokenRepository.deleteByToken(token.getToken());
+        }
+
+        List<Follow> follows = new ArrayList<>();
+        follows.addAll(followRepository.findAllByFollower(user));
+        follows.addAll(followRepository.findAllByFollowing(user));
+
+        for (Follow follow : follows){
+            followRepository.deleteById(follow.getId());
+        }
+
+        List<Notification> notifications = new ArrayList<>();
+        notifications.addAll(notificationRepository.findAllByUsers(user));
+        notifications.addAll(notificationRepository.findAllBySender(user));
+        for (Notification notification : notifications){
+            notificationRepository.deleteById(notification.getId());
+        }
+
         List<Inbox> inboxes = new ArrayList<>();
         if (!inboxRepository.findAllByUser1(user).isEmpty()){
             List<Inbox> inboxes1 = inboxRepository.findAllByUser1(user);
@@ -133,8 +162,10 @@ public class UserService {
         String username = jwtService.getUsername(request);
         Gson gson = new Gson();
         Users user = userRepository.findById(username).get();
-        String json = gson.toJson(user);
-        System.out.println(json);
+        List<Follow> followerList = followRepository.findAllByFollowing(user);
+        List<Follow> followingList = followRepository.findAllByFollower(user);
+        AllUserCredentialsResponseModel allUserCredentialsResponseModel = new AllUserCredentialsResponseModel(user, followerList.size(), followingList.size());
+        String json = gson.toJson(allUserCredentialsResponseModel);
         return ResponseEntity.ok(json);
     }
 
@@ -160,13 +191,39 @@ public class UserService {
         return ResponseEntity.ok(json);
     }
 
-    public ResponseEntity<?> getUserProfile(String user) {
+    public ResponseEntity<?> updateProfileSettings(UpdateProfileSettingsModel updateProfileSettingsModel, HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
+        Gson gson = new Gson();
+        Users users = userRepository.findById(username).get();
+
+        users.setFirstName(updateProfileSettingsModel.firstName());
+        users.setLastName(updateProfileSettingsModel.lastName());
+        users.setProfilePic(updateProfileSettingsModel.profilePic());
+
+        userRepository.save(users);
+        String json = gson.toJson(users);
+        return ResponseEntity.ok(json);
+    }
+
+    public ResponseEntity<?> getUserProfile(String user, HttpServletRequest request) {
+
         if (user == null || userRepository.findById(user).isEmpty()){
             return ResponseEntity.badRequest().body("User does not exist");
         }
+
         Gson gson = new Gson();
-        Users userDetails = userRepository.findById(user).get();
-        UserProfileModel userProfileModel = new UserProfileModel(userDetails.getUsername(), userDetails.getCountry(), userDetails.getBio(), userDetails.getTopCategory(), userDetails.getCardColor(), userDetails.getBackgroundColor(), userDetails.getProfilePic(), String.valueOf(userDetails.isOnline()));
+
+        String username = jwtService.getUsername(request);
+        Users selfObj = userRepository.findById(username).get();
+
+        Users userObj = userRepository.findById(user).get();
+
+        boolean follows = followRepository.existsByFollowerAndFollowing(selfObj, userObj);
+
+        List<Follow> followerList = followRepository.findAllByFollowing(userObj);
+        List<Follow> followingList = followRepository.findAllByFollower(userObj);
+
+        UserProfileModel userProfileModel = new UserProfileModel(userObj.getUsername(), userObj.getCountry(), userObj.getBio(), userObj.getTopCategory(), userObj.getCardColor(), userObj.getBackgroundColor(), userObj.getProfilePic(), String.valueOf(userObj.isOnline()), followerList.size(), followingList.size(), follows);
         String json = gson.toJson(userProfileModel);
         System.out.println(json);
         return ResponseEntity.ok(json);
@@ -176,7 +233,11 @@ public class UserService {
         List<Users> users = userRepository.findAll();
         List<UserProfileModel> userProfileList = new ArrayList<>();
         for (Users user : users){
-            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor(), user.getProfilePic(), String.valueOf(user.isOnline())));
+
+            List<Follow> followerList = followRepository.findAllByFollowing(user);
+            List<Follow> followingList = followRepository.findAllByFollower(user);
+
+            userProfileList.add(new UserProfileModel(user.getUsername(), user.getCountry(), user.getBio(), user.getTopCategory(), user.getCardColor(), user.getBackgroundColor(), user.getProfilePic(), String.valueOf(user.isOnline()), followerList.size(), followingList.size(), false));
         }
         Gson gson = new Gson();
         String json = gson.toJson(userProfileList);
@@ -188,12 +249,19 @@ public class UserService {
         if (userRepository.findById(username).isEmpty()) {
             return ResponseEntity.badRequest().body("user does not exist");
         }
-        System.out.println(theme);
         Users user = userRepository.findById(username).get();
         user.setTheme(theme);
 
         userRepository.save(user);
         return ResponseEntity.ok("updated theme");
+    }
+
+    public ResponseEntity<?> getTheme(HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+
+        Optional<Users> user = userRepository.findById(username);
+        return user.map(users -> ResponseEntity.ok(users.getTheme())).orElseGet(() -> ResponseEntity.badRequest().body("user does not exist"));
+
     }
 
 

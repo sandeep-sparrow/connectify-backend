@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +110,39 @@ public class PostService {
     public ResponseEntity<?> getPosts(int page){
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "lastModifiedDate"));
         List<Post> posts = postRepository.findAll(pageRequest).getContent();
+        List<PostResponseModel> modelPosts = new ArrayList<>();
+        for (Post post : posts){
+            List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());
+            List<PostInteractions> bookmarkedList = postInteractionRepository.findAllBookmarkedByPostID(post.getId());
+            modelPosts.add(new PostResponseModel(post.getId(),
+                    post.getUsers().getUsername(),
+                    post.getTitle(), post.getBody(),
+                    (long) likedList.size(), (long) bookmarkedList.size(),
+                    post.getLastModifiedDate(),
+                    post.getCategory()));
+        }
+        return ResponseEntity.ok(modelPosts);
+    }
+
+    public ResponseEntity<?> getPostsByCategoryAndDateAndUser(int page, String category, String user, int lastDays){
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "lastModifiedDate"));
+        LocalDate localDate = LocalDate.now().minusDays(lastDays);
+        Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        List<Post> posts;
+
+        Optional<Users> userOptional = userRepository.findById(user);
+
+
+
+        if ((category != null && !category.equals(""))){
+            posts = userOptional.map(users -> postRepository.findAllByCategoryAndUsersAndLastModifiedDateAfter(category, users, date, pageRequest).getContent())
+                    .orElseGet(() -> postRepository.findAllByCategoryAndLastModifiedDateAfter(category, date, pageRequest).getContent());
+
+        } else {
+            posts = userOptional.map(users -> postRepository.findAllByUsersAndLastModifiedDateAfter(users, date, pageRequest).getContent())
+                    .orElseGet(() -> postRepository.findAllByLastModifiedDateAfter(date, pageRequest).getContent());
+        }
+
         List<PostResponseModel> modelPosts = new ArrayList<>();
         for (Post post : posts){
             List<PostInteractions> likedList = postInteractionRepository.findAllLikedByPostID(post.getId());

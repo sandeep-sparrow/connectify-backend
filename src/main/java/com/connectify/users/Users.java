@@ -36,6 +36,9 @@ public class Users implements UserDetails {
     private String profilePic;
     private boolean online;
     private Date lastHeartbeat;
+    private String firstName;
+
+    private String lastName;
 
     public Users(String username, String email, String password, UserType type) {
         this.username = username;
@@ -49,9 +52,11 @@ public class Users implements UserDetails {
         this.cardColor = "#1C1C1C";
         this.backgroundColor = "#263238";
         this.profilePic = "😀";
-        this.theme = "dark";
+        this.theme = "light";
         this.online = false;
         this.lastHeartbeat = new Date();
+        firstName = "unknown first name";
+        lastName = "unknown last name";
     }
 
     @Override

@@ -22,10 +22,10 @@ public class NotificationService {
     public ResponseEntity<?> getNotifications(HttpServletRequest request) {
         String username = jwtService.getUsername(request);
         Users user = userRepository.findById(username).get();
-        List<Notification> notifications = notificationRepository.findAllByUsers(user);
+        List<Notification> notifications = notificationRepository.findAllByUsersOrderByTimeDesc(user);
         List<NotificationResponseModel> notificationResponseModel = new ArrayList<>();
         for (Notification notification : notifications){
-            notificationResponseModel.add(new NotificationResponseModel(notification.getSender().getUsername(), notification.getContent(), notification.getType(), notification.getTime()));
+            notificationResponseModel.add(new NotificationResponseModel(notification.getSender().getUsername(), notification.getContent(), notification.getType(), notification.getTime(), notification.isUnread()));
         }
         Gson gson = new Gson();
         return ResponseEntity.ok(gson.toJson(notificationResponseModel));
@@ -37,6 +37,17 @@ public class NotificationService {
         List<Notification> userNotifications = notificationRepository.findAllByUsers(user);
         for (Notification notification: userNotifications){
             notificationRepository.deleteById(notification.getId());
+        }
+        return ResponseEntity.ok("Removed all notifications");
+    }
+
+    public ResponseEntity<?> readAllNotifications(HttpServletRequest request){
+        String username = jwtService.getUsername(request);
+        Users user = userRepository.findById(username).get();
+        List<Notification> userNotifications = notificationRepository.findAllByUsers(user);
+        for (Notification notification: userNotifications){
+            notification.setUnread(false);
+            notificationRepository.save(notification);
         }
         return ResponseEntity.ok("Removed all notifications");
     }

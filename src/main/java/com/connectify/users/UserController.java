@@ -39,9 +39,14 @@ public class UserController {
         return userService.updateProfile(updateProfileModel, request);
     }
 
+    @PutMapping("/profile-settings")
+    public ResponseEntity<?> updateProfileSettings(@RequestBody UpdateProfileSettingsModel updateProfileSettingsModel, HttpServletRequest request){
+        return userService.updateProfileSettings(updateProfileSettingsModel, request);
+    }
+
     @GetMapping("/{user}")
-    public ResponseEntity<?> getUserProfile(@PathVariable("user") String user){
-        return userService.getUserProfile(user);
+    public ResponseEntity<?> getUserProfile(@PathVariable("user") String user, HttpServletRequest request){
+        return userService.getUserProfile(user, request);
     }
 
     @GetMapping("/users")
@@ -52,6 +57,11 @@ public class UserController {
     @PutMapping("/update-theme")
     public ResponseEntity<?> updateTheme(@RequestBody String theme, HttpServletRequest request){
         return userService.updateTheme(theme, request);
+    }
+
+    @GetMapping("/theme")
+    public ResponseEntity<?> getTheme(HttpServletRequest request){
+        return userService.getTheme(request);
     }
 
     @PostMapping("/online")

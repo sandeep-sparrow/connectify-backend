@@ -40,7 +40,7 @@ public class CommentService {
         Comment comment = new Comment(post, user, content);
         commentRepository.save(comment);
         notificationService.setNotification(user, postOwner, NotificationType.COMMENT, comment.getId());
-        return ResponseEntity.ok("Created comment!");
+        return ResponseEntity.ok(new CommentResponseModel(username, content, comment.getCreationDate()));
     }
 
     public ResponseEntity<?> getPostComments(Long postID){

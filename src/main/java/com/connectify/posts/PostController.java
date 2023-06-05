@@ -21,6 +21,10 @@ public class PostController {
         return postService.getPosts(page);
     }
 
+    @PostMapping("/posts-filter")
+    public ResponseEntity<?> getPostsByCategoryAndDateAndUser(@RequestParam int page, @RequestBody FilterModel filterModel){
+        return postService.getPostsByCategoryAndDateAndUser(page, filterModel.category(), filterModel.user(), filterModel.lastDays());
+    }
     @GetMapping("/posts/{user}")
     public ResponseEntity<?> getUserPosts(@PathVariable("user") String user, @RequestParam int page){
         return postService.getUserPosts(user, page);
